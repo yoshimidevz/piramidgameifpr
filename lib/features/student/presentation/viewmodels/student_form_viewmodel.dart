@@ -4,6 +4,7 @@ import '../../../../core/command/command.dart';
 import '../../domain/entities/popularity_criteria.dart';
 import '../../domain/entities/student.dart';
 import '../../facade/student_usecases_facade.dart';
+import '../../../../core/command/command_state.dart';
 
 class StudentFormViewModel {
   final StudentUseCasesFacade _facade;
@@ -66,6 +67,17 @@ class StudentFormViewModel {
       return _facade.updateStudent(student);
     }
     return _facade.createStudent(student);
+  }
+  void reset() {
+    name.value = '';
+    nickname.value = '';
+    course.value = Course.info;
+    classYear.value = 2024;
+    birthDate.value = null;
+    for (final s in criteriaScores.values) {
+      s.value = 0.0;
+    }
+    saveCommand.state.value = const CommandState();
   }
 
   void dispose() {
