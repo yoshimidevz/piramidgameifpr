@@ -11,6 +11,7 @@ import '../../features/student/domain/usecases/get_all_students_usecase.dart';
 import '../../features/student/domain/usecases/get_student_by_id_usecase.dart';
 import '../../features/student/domain/usecases/calculate_ranking_usecase.dart';
 import '../../features/student/facade/student_usecases_facade.dart';
+import '../../features/student/presentation/viewmodels/student_form_viewmodel.dart';
 import '../../features/theme_settings/data/services/theme_local_service.dart';
 import '../../features/theme_settings/data/services/theme_shared_prefs_service.dart';
 import '../../features/theme_settings/data/repositories/theme_repository_impl.dart';
@@ -18,9 +19,8 @@ import '../../features/theme_settings/domain/repositories/theme_repository.dart'
 import '../../features/theme_settings/domain/usecases/get_theme_mode_usecase.dart';
 import '../../features/theme_settings/domain/usecases/toggle_theme_usecase.dart';
 import '../../features/theme_settings/facade/theme_usecases_facade.dart';
+import '../../features/student/presentation/viewmodels/ranking_viewmodel.dart';
 
-// Monta manualmente toda a cadeia de dependencias do app.
-// Cada Facade e construida uma unica vez e reutilizada pelas telas.
 class InjectionContainer {
   InjectionContainer._();
 
@@ -38,15 +38,13 @@ class InjectionContainer {
 
   bool _initialized = false;
 
-  // Deve ser chamado uma vez, antes do runApp().
   Future<void> init() async {
     if (_initialized) return;
 
-    await SharedPreferences.getInstance(); // garante que o plugin esta pronto
+    await SharedPreferences.getInstance();
 
     _storageHelper = LocalStorageHelper();
 
-    // Student
     _studentLocalService = StudentSharedPrefsService(_storageHelper);
     _studentRepository = StudentRepositoryImpl(_studentLocalService);
     studentFacade = StudentUseCasesFacade(
@@ -58,7 +56,6 @@ class InjectionContainer {
       calculateRanking: CalculateRankingUseCase(_studentRepository),
     );
 
-    // Theme
     _themeLocalService = ThemeSharedPrefsService(_storageHelper);
     _themeRepository = ThemeRepositoryImpl(_themeLocalService);
     themeFacade = ThemeUseCasesFacade(
@@ -66,6 +63,12 @@ class InjectionContainer {
       toggleTheme: ToggleThemeUseCase(_themeRepository),
     );
 
+    studentFormViewModel = StudentFormViewModel(studentFacade);
+    rankingViewModel = RankingViewModel(studentFacade);
+
     _initialized = true;
   }
+
+  late final StudentFormViewModel studentFormViewModel;
+  late final RankingViewModel rankingViewModel;
 }

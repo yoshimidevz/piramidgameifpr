@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../di/injection_container.dart';
 
 class AppShell extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
@@ -7,6 +8,16 @@ class AppShell extends StatelessWidget {
   const AppShell({super.key, required this.navigationShell});
 
   void _onTap(int index) {
+    if (index == 1) {
+      // Aba "Ranking" - recarrega a lista (pode ter mudado).
+      InjectionContainer.instance.rankingViewModel.refresh();
+    }
+
+    if (index == 2) {
+      // Aba "Cadastrar" - reseta os valores do formulario.
+      InjectionContainer.instance.studentFormViewModel.reset();
+    }
+
     navigationShell.goBranch(
       index,
       initialLocation: index == navigationShell.currentIndex,
