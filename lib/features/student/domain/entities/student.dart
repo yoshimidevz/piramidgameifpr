@@ -1,4 +1,5 @@
 import 'popularity_criteria.dart';
+import 'student_tier.dart';
 
 // Cursos disponíveis no campus, conforme especificação.
 enum Course { info, mec, mamb, prod, tads, tga }
@@ -28,7 +29,7 @@ class Student {
   final String name;
   final String nickname;
   final Course course;
-  final int classYear; // turma/ano, ex: 2024
+  final int classYear;
   final DateTime birthDate;
   final Map<CriteriaType, double> criteriaScores;
 
@@ -46,6 +47,9 @@ class Student {
   double get totalScore {
     return criteriaScores.values.fold(0.0, (sum, score) => sum + score);
   }
+
+  // Classificação (Novato/Popular/Ídolo/Lenda) com base no totalScore.
+  StudentTier get tier => StudentTierInfo.fromScore(totalScore);
 
   Student copyWith({
     String? id,
