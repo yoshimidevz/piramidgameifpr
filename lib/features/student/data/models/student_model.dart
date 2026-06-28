@@ -1,8 +1,7 @@
+import '../../../../core/extensions/enum_extensions.dart';
 import '../../domain/entities/student.dart';
 import '../../domain/entities/popularity_criteria.dart';
 
-// Exception específica de falha ao converter JSON em StudentModel.
-// O Service vai capturar essa exception e converter em Result.failure.
 class StudentModelParseException implements Exception {
   final String message;
   const StudentModelParseException(this.message);
@@ -37,8 +36,6 @@ class StudentModel extends Student {
     );
   }
 
-  // Map -> StudentModel (vindo do JSON decodificado).
-  // Lança StudentModelParseException se algo estiver corrompido/inválido.
   factory StudentModel.fromJson(Map<String, dynamic> json) {
     try {
       final scoresJson = json['criteriaScores'] as Map<String, dynamic>;
@@ -92,14 +89,5 @@ class StudentModel extends Student {
       'birthDate': birthDate.toIso8601String(),
       'criteriaScores': scoresJson,
     };
-  }
-}
-
-extension _SafeEnumByName<T extends Enum> on List<T> {
-  T? byNameOrNull(String name) {
-    for (final value in this) {
-      if (value.name == name) return value;
-    }
-    return null;
   }
 }
