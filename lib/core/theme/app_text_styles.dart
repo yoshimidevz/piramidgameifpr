@@ -2,16 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTextStyles {
-  static TextStyle sora({
+   static TextStyle sora({
     required double fontSize,
     required FontWeight fontWeight,
     double? letterSpacing,
+    double? height,
     Color? color,
   }) {
     return GoogleFonts.sora(
       fontSize: fontSize,
       fontWeight: fontWeight,
       letterSpacing: letterSpacing,
+      height: height,
       color: color,
     );
   }
@@ -20,12 +22,14 @@ class AppTextStyles {
     required double fontSize,
     required FontWeight fontWeight,
     double? letterSpacing,
+    double? height,
     Color? color,
   }) {
     return GoogleFonts.plusJakartaSans(
       fontSize: fontSize,
       fontWeight: fontWeight,
       letterSpacing: letterSpacing,
+      height: height,
       color: color,
     );
   }
