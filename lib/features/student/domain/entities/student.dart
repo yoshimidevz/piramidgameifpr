@@ -48,6 +48,7 @@ class Student {
   }
 
   Student copyWith({
+    String? id,
     String? name,
     String? nickname,
     Course? course,
@@ -56,7 +57,7 @@ class Student {
     Map<CriteriaType, double>? criteriaScores,
   }) {
     return Student(
-      id: id,
+      id: id ?? this.id,
       name: name ?? this.name,
       nickname: nickname ?? this.nickname,
       course: course ?? this.course,
