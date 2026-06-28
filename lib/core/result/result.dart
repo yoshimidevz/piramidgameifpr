@@ -9,6 +9,7 @@ sealed class Result<T> {
 
   bool get isFailure => this is ResultFailure<T>;
 
+  // Trata os dois casos de uma vez, evita if/is espalhado
   R when<R>({
     required R Function(T value) onSuccess,
     required R Function(Failure failure) onFailure,
@@ -40,6 +41,7 @@ final class ResultFailure<T> extends Result<T> {
   const ResultFailure(this.failure);
 }
 
+// Mensagem amigável pra UI + exception original opcional pra debug
 class Failure {
   final String message;
   final Object? exception;
