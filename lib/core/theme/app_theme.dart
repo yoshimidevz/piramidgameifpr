@@ -30,13 +30,20 @@ class AppTheme {
     required Color border,
   }) {
     final base = ThemeData(brightness: brightness);
+    final isDark = brightness == Brightness.dark;
 
     return base.copyWith(
       scaffoldBackgroundColor: bg,
       colorScheme: base.colorScheme.copyWith(
         brightness: brightness,
         primary: AppColors.green,
+        onPrimary: Colors.white,
         secondary: AppColors.gold,
+        secondaryContainer: AppColors.green.withOpacity(isDark ? .25 : .12),
+        onSecondaryContainer: AppColors.green,
+        tertiary: AppColors.green,
+        tertiaryContainer: AppColors.green.withOpacity(isDark ? .25 : .12),
+        onTertiaryContainer: AppColors.green,
         error: AppColors.red,
         surface: surface,
         onSurface: text,
@@ -58,6 +65,48 @@ class AppTheme {
         backgroundColor: bg,
         foregroundColor: text,
         elevation: 0,
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: surface,
+        indicatorColor: AppColors.green.withOpacity(isDark ? .25 : .12),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final selected = states.contains(WidgetState.selected);
+          return TextStyle(
+            fontSize: 11,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            color: selected ? AppColors.green : textDim,
+          );
+        }),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          final selected = states.contains(WidgetState.selected);
+          return IconThemeData(
+            color: selected ? AppColors.green : textDim,
+          );
+        }),
+      ),
+      datePickerTheme: DatePickerThemeData(
+        backgroundColor: surface,
+        headerBackgroundColor: AppColors.green,
+        headerForegroundColor: Colors.white,
+        todayBorder: const BorderSide(color: AppColors.green),
+        dayOverlayColor: WidgetStateProperty.all(AppColors.green.withOpacity(.1)),
+        dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return AppColors.green;
+          return null;
+        }),
+        dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return Colors.white;
+          return text;
+        }),
+        yearOverlayColor: WidgetStateProperty.all(AppColors.green.withOpacity(.1)),
+        yearBackgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return AppColors.green;
+          return null;
+        }),
+        yearForegroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return Colors.white;
+          return text;
+        }),
       ),
     );
   }
