@@ -180,51 +180,47 @@ class _Podium extends StatelessWidget {
     final second = students[1];
     final third = students[2];
 
-    return SizedBox(
-      height: 210,
-      child: Stack(
-        alignment: Alignment.bottomCenter,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(child: _PodiumBlock(position: 2, height: 70)),
-              Expanded(child: _PodiumBlock(position: 1, height: 96)),
-              Expanded(child: _PodiumBlock(position: 3, height: 56)),
-            ],
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 0,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Expanded(child: _PodiumAvatar(student: second, position: 2)),
-                Expanded(child: _PodiumAvatar(student: first, position: 1)),
-                Expanded(child: _PodiumAvatar(student: third, position: 3)),
-              ],
-            ),
-          ),
-        ],
-      ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Expanded(
+          flex: 10,
+          child: _PodiumColumn(student: second, position: 2, blockHeight: 92, blockColor: null),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          flex: 11,
+          child: _PodiumColumn(student: first, position: 1, blockHeight: 128, blockColor: AppColors.green, isWinner: true),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          flex: 10,
+          child: _PodiumColumn(student: third, position: 3, blockHeight: 64, blockColor: null),
+        ),
+      ],
     );
   }
 }
 
-class _PodiumAvatar extends StatelessWidget {
+class _PodiumColumn extends StatelessWidget {
   final Student student;
   final int position;
+  final double blockHeight;
+  final Color? blockColor;
+  final bool isWinner;
 
-  const _PodiumAvatar({required this.student, required this.position});
+  const _PodiumColumn({
+    required this.student,
+    required this.position,
+    required this.blockHeight,
+    required this.blockColor,
+    this.isWinner = false,
+  });
 
   Color _avatarColor() {
     final colors = [
-      AppColors.green,
-      AppColors.greenDeep,
-      const Color(0xFFD6457F),
-      const Color(0xFF8B5CF6),
-      const Color(0xFF3B82F6),
+      AppColors.green, AppColors.greenDeep,
+      const Color(0xFFD6457F), const Color(0xFF8B5CF6), const Color(0xFF3B82F6),
     ];
     return colors[student.name.hashCode % colors.length];
   }
@@ -238,82 +234,98 @@ class _PodiumAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = position == 1 ? 72.0 : 56.0;
+    final theme = Theme.of(context);
+    final avatarSize = isWinner ? 74.0 : 60.0;
 
     return GestureDetector(
       onTap: () => context.go('/aluno/${student.id}'),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-        if (position == 1)
-          const Icon(Icons.emoji_events_rounded, color: AppColors.gold, size: 26),
-        Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: _avatarColor(),
-            border: position == 1
-                ? Border.all(color: AppColors.gold, width: 3)
-                : null,
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            _initials(),
-            style: AppTextStyles.sora(
-              fontSize: position == 1 ? 22 : 18,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
+          if (isWinner)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 4),
+              child: Icon(Icons.emoji_events_rounded, color: AppColors.gold, size: 26),
+            ),
+          Container(
+            width: avatarSize,
+            height: avatarSize,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _avatarColor(),
+              border: Border.all(
+                color: isWinner ? AppColors.gold : const Color(0xFFC0C7CC),
+                width: 3,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(.3),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              _initials(),
+              style: AppTextStyles.sora(
+                fontSize: isWinner ? 23 : 19,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          student.nickname.isNotEmpty ? student.nickname : student.name,
-          style: AppTextStyles.jakarta(fontSize: 12.5, fontWeight: FontWeight.w700),
-          overflow: TextOverflow.ellipsis,
-        ),
-        Text(
-          '${student.totalScore.toInt()}',
-          style: AppTextStyles.jakarta(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            color: AppColors.green,
+          const SizedBox(height: 8),
+          Text(
+            student.nickname.isNotEmpty ? student.nickname : student.name,
+            style: AppTextStyles.jakarta(
+              fontSize: isWinner ? 13.5 : 12.5,
+              fontWeight: isWinner ? FontWeight.w800 : FontWeight.w700,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-        ),
-      ],
-    ),
-  );
-  }
-}
-
-class _PodiumBlock extends StatelessWidget {
-  final int position;
-  final double height;
-
-  const _PodiumBlock({required this.position, required this.height});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isFirst = position == 1;
-
-    return Container(
-      height: height,
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      decoration: BoxDecoration(
-        color: isFirst ? AppColors.green : theme.colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-        border: isFirst ? null : Border.all(color: theme.dividerColor),
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        '$position',
-        style: AppTextStyles.sora(
-          fontSize: 28,
-          fontWeight: FontWeight.w800,
-          color: isFirst ? Colors.white : theme.colorScheme.onSurface.withOpacity(.3),
-        ),
+          Text(
+            isWinner ? '${student.totalScore.toInt()} pts' : '${student.totalScore.toInt()}',
+            style: AppTextStyles.jakarta(
+              fontSize: isWinner ? 13 : 12,
+              fontWeight: FontWeight.w700,
+              color: AppColors.green,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            height: blockHeight,
+            alignment: Alignment.topCenter,
+            padding: const EdgeInsets.only(top: 12),
+            decoration: BoxDecoration(
+              color: blockColor,
+              gradient: blockColor == null
+                  ? LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [theme.colorScheme.surface, AppColors.lightSurface2],
+                    )
+                  : LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [AppColors.green, AppColors.greenDeep],
+                    ),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+              border: blockColor == null ? Border.all(color: theme.dividerColor) : null,
+            ),
+            child: Text(
+              '$position',
+              style: AppTextStyles.sora(
+                fontSize: isWinner ? 30 : 26,
+                fontWeight: FontWeight.w800,
+                color: isWinner ? Colors.white : const Color(0xFFAAB2B8),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
