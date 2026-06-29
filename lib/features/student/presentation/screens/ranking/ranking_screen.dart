@@ -240,9 +240,11 @@ class _PodiumAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = position == 1 ? 72.0 : 56.0;
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
+    return GestureDetector(
+      onTap: () => context.go('/aluno/${student.id}'),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
         if (position == 1)
           const Icon(Icons.emoji_events_rounded, color: AppColors.gold, size: 26),
         Container(
@@ -280,7 +282,8 @@ class _PodiumAvatar extends StatelessWidget {
           ),
         ),
       ],
-    );
+    ),
+  );
   }
 }
 
@@ -322,7 +325,6 @@ class _RankingListItem extends StatelessWidget {
   final Student student;
 
   const _RankingListItem({required this.position, required this.student});
-
   Color _avatarColor() {
     final colors = [
       AppColors.green,
@@ -346,84 +348,87 @@ class _RankingListItem extends StatelessWidget {
     final theme = Theme.of(context);
     final tier = StudentTierInfo.fromScore(student.totalScore);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.dividerColor),
-      ),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 24,
-            child: Text(
-              '$position',
-              style: AppTextStyles.jakarta(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: theme.colorScheme.onSurface.withOpacity(.5),
+    return GestureDetector(
+      onTap: () => context.go('/aluno/${student.id}'),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: theme.dividerColor),
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 24,
+              child: Text(
+                '$position',
+                style: AppTextStyles.jakarta(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: theme.colorScheme.onSurface.withOpacity(.5),
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 8),
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: _avatarColor(),
-            child: Text(
-              _initials(),
-              style: AppTextStyles.sora(
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-                color: Colors.white,
+            const SizedBox(width: 8),
+            CircleAvatar(
+              radius: 18,
+              backgroundColor: _avatarColor(),
+              child: Text(
+                _initials(),
+                style: AppTextStyles.sora(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    student.name,
+                    style: AppTextStyles.jakarta(fontSize: 14.5, fontWeight: FontWeight.w700),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    '${student.course.label} · ${student.classYear}',
+                    style: AppTextStyles.jakarta(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: theme.colorScheme.onSurface.withOpacity(.55),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  student.name,
-                  style: AppTextStyles.jakarta(fontSize: 14.5, fontWeight: FontWeight.w700),
-                  overflow: TextOverflow.ellipsis,
+                  '${student.totalScore.toInt()}',
+                  style: AppTextStyles.sora(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.green,
+                  ),
                 ),
                 Text(
-                  '${student.course.label} · ${student.classYear}',
+                  'NÍVEL ${tier.label.toUpperCase()}',
                   style: AppTextStyles.jakarta(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: theme.colorScheme.onSurface.withOpacity(.55),
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.4,
+                    color: AppColors.gold,
                   ),
                 ),
               ],
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '${student.totalScore.toInt()}',
-                style: AppTextStyles.sora(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.green,
-                ),
-              ),
-              Text(
-                'NÍVEL ${tier.label.toUpperCase()}',
-                style: AppTextStyles.jakarta(
-                  fontSize: 9.5,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.4,
-                  color: AppColors.gold,
-                ),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
