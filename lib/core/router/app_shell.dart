@@ -9,13 +9,18 @@ class AppShell extends StatelessWidget {
 
   void _onTap(int index) {
     if (index == 1) {
-      // Aba "Ranking" - recarrega a lista (pode ter mudado).
       InjectionContainer.instance.rankingViewModel.refresh();
     }
 
     if (index == 2) {
-      // Aba "Cadastrar" - reseta os valores do formulario.
       InjectionContainer.instance.studentFormViewModel.reset();
+    }
+
+    if (index == 3) {
+      final currentStudent = InjectionContainer.instance.studentDetailViewModel.student.value;
+      if (currentStudent != null) {
+        InjectionContainer.instance.studentDetailViewModel.loadStudent(currentStudent.id);
+      }
     }
 
     navigationShell.goBranch(

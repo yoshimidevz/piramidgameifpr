@@ -8,14 +8,16 @@ import '../../../domain/entities/popularity_criteria.dart';
 import '../../../domain/entities/student.dart';
 import '../../../domain/entities/student_tier.dart';
 import '../../widgets/aura_radar_chart.dart';
+import '../../viewmodels/student_detail_viewmodel.dart';
 
 class StudentDetailScreen extends StatelessWidget {
   final String? studentId;
 
   const StudentDetailScreen({super.key, required this.studentId});
 
-  @override
+   @override
   Widget build(BuildContext context) {
+
     if (studentId == null) {
       return const Scaffold(
         body: Center(child: Text('Nenhum aluno selecionado ainda')),
@@ -34,8 +36,45 @@ class StudentDetailScreen extends StatelessWidget {
           final student = viewModel.student.value;
           final isLoading = viewModel.isLoading.value;
 
-          if (student == null || isLoading) {
+         if (isLoading) {
             return const Center(child: CircularProgressIndicator());
+          }
+
+          if (student == null) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.person_off_rounded, size: 56, color: AppColors.gold.withOpacity(.6)),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Aluno não encontrado',
+                      style: AppTextStyles.sora(fontSize: 18, fontWeight: FontWeight.w800),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Esse aluno pode ter sido removido. Veja o ranking para escolher outro.',
+                      style: AppTextStyles.jakarta(
+                        fontSize: 13.5, fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(.6),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => context.go('/ranking'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.green,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Ver Ranking'),
+                    ),
+                  ],
+                ),
+              ),
+            );
           }
 
           return SingleChildScrollView(
@@ -46,6 +85,16 @@ class StudentDetailScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
+                    IconButton(
+                      onPressed: () => _confirmDelete(context, viewModel, student),
+                      icon: const Icon(Icons.delete_outline_rounded),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        side: BorderSide(color: Theme.of(context).dividerColor),
+                        foregroundColor: AppColors.red,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     IconButton(
                       onPressed: () => context.go('/cadastro/editar/${student.id}'),
                       icon: const Icon(Icons.edit_rounded),
@@ -94,6 +143,55 @@ class StudentDetailScreen extends StatelessWidget {
   }
 }
 
+Future<void> _confirmDelete(
+  BuildContext context,
+  StudentDetailViewModel viewModel,
+  Student student,
+) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) {
+      return AlertDialog(
+        title: const Text('Remover aluno'),
+        content: Text(
+          'Tem certeza que deseja remover "${student.name}" do ranking? '
+          'Essa ação não pode ser desfeita.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.red),
+            child: const Text('Remover'),
+          ),
+        ],
+      );
+    },
+  );
+
+  if (confirmed != true) return;
+
+  await viewModel.deleteCommand.execute(student.id);
+
+  if (!context.mounted) return;
+
+  final state = viewModel.deleteCommand.state.value;
+
+  if (state.isSuccess) {
+    await InjectionContainer.instance.rankingViewModel.refresh();
+    if (context.mounted) context.go('/ranking');
+  } else if (state.isError) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${state.error}'),
+        backgroundColor: AppColors.red,
+      ),
+    );
+  }
+}
 
 class _StudentHeader extends StatelessWidget {
   final Student student;
