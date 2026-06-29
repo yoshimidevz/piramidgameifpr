@@ -21,6 +21,7 @@ import '../../features/theme_settings/domain/repositories/theme_repository.dart'
 import '../../features/theme_settings/domain/usecases/get_theme_mode_usecase.dart';
 import '../../features/theme_settings/domain/usecases/toggle_theme_usecase.dart';
 import '../../features/theme_settings/facade/theme_usecases_facade.dart';
+import '../../features/theme_settings/presentation/viewmodels/theme_viewmodel.dart';
 
 class InjectionContainer {
   InjectionContainer._();
@@ -40,6 +41,7 @@ class InjectionContainer {
   late final StudentFormViewModel studentFormViewModel;
   late final RankingViewModel rankingViewModel;
   late final StudentDetailViewModel studentDetailViewModel;
+  late final ThemeViewModel themeViewModel;
 
   bool _initialized = false;
 
@@ -71,6 +73,7 @@ class InjectionContainer {
     studentFormViewModel = StudentFormViewModel(studentFacade);
     rankingViewModel = RankingViewModel(studentFacade);
     studentDetailViewModel = StudentDetailViewModel(studentFacade);
+    themeViewModel = ThemeViewModel(themeFacade);
 
     _initialized = true;
   }
