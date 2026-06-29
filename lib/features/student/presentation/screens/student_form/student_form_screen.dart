@@ -53,6 +53,8 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
     final state = _viewModel.saveCommand.state.value;
 
     if (state.isSuccess) {
+      await InjectionContainer.instance.rankingViewModel.refresh();
+
       context.go('/ranking');
     } else if (state.isError) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -67,6 +69,12 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.studentId != null;
+
+    if (isEditing && _viewModel.editingStudentId != widget.studentId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _viewModel.loadForEditing(widget.studentId!);
+      });
+    }
 
     return Scaffold(
       body: SafeArea(
@@ -535,12 +543,10 @@ class _BottomSavePanel extends StatelessWidget {
                           )
                         : Text(
                             isComplete
-                                ? 'Salvar Cadastro'
+                                ? (viewModel.editingStudentId != null
+                                    ? 'Salvar Edição'
+                                    : 'Salvar Cadastro')
                                 : '${viewModel.evaluatedCount.value}/15 avaliados',
-                            style: AppTextStyles.jakarta(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                            ),
                           ),
                   ),
                 ),

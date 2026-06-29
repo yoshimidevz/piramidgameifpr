@@ -12,6 +12,8 @@ import '../../features/student/domain/usecases/get_student_by_id_usecase.dart';
 import '../../features/student/domain/usecases/calculate_ranking_usecase.dart';
 import '../../features/student/facade/student_usecases_facade.dart';
 import '../../features/student/presentation/viewmodels/student_form_viewmodel.dart';
+import '../../features/student/presentation/viewmodels/ranking_viewmodel.dart';
+import '../../features/student/presentation/viewmodels/student_detail_viewmodel.dart';
 import '../../features/theme_settings/data/services/theme_local_service.dart';
 import '../../features/theme_settings/data/services/theme_shared_prefs_service.dart';
 import '../../features/theme_settings/data/repositories/theme_repository_impl.dart';
@@ -19,7 +21,6 @@ import '../../features/theme_settings/domain/repositories/theme_repository.dart'
 import '../../features/theme_settings/domain/usecases/get_theme_mode_usecase.dart';
 import '../../features/theme_settings/domain/usecases/toggle_theme_usecase.dart';
 import '../../features/theme_settings/facade/theme_usecases_facade.dart';
-import '../../features/student/presentation/viewmodels/ranking_viewmodel.dart';
 
 class InjectionContainer {
   InjectionContainer._();
@@ -35,6 +36,10 @@ class InjectionContainer {
   late final ThemeLocalService _themeLocalService;
   late final ThemeRepository _themeRepository;
   late final ThemeUseCasesFacade themeFacade;
+
+  late final StudentFormViewModel studentFormViewModel;
+  late final RankingViewModel rankingViewModel;
+  late final StudentDetailViewModel studentDetailViewModel;
 
   bool _initialized = false;
 
@@ -65,10 +70,8 @@ class InjectionContainer {
 
     studentFormViewModel = StudentFormViewModel(studentFacade);
     rankingViewModel = RankingViewModel(studentFacade);
+    studentDetailViewModel = StudentDetailViewModel(studentFacade);
 
     _initialized = true;
   }
-
-  late final StudentFormViewModel studentFormViewModel;
-  late final RankingViewModel rankingViewModel;
 }

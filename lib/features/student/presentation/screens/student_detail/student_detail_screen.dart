@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:signals/signals_flutter.dart';
 import '../../../../../core/di/injection_container.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -6,67 +7,34 @@ import '../../../../../core/theme/app_text_styles.dart';
 import '../../../domain/entities/popularity_criteria.dart';
 import '../../../domain/entities/student.dart';
 import '../../../domain/entities/student_tier.dart';
-import '../../viewmodels/student_detail_viewmodel.dart';
 import '../../widgets/aura_radar_chart.dart';
 
-class StudentDetailScreen extends StatefulWidget {
+class StudentDetailScreen extends StatelessWidget {
   final String? studentId;
 
   const StudentDetailScreen({super.key, required this.studentId});
 
   @override
-  State<StudentDetailScreen> createState() => _StudentDetailScreenState();
-}
-
-class _StudentDetailScreenState extends State<StudentDetailScreen> {
-  StudentDetailViewModel? _viewModel;
-
-  @override
-  void initState() {
-    super.initState();
-    _setupViewModel();
-  }
-
-  @override
-  void didUpdateWidget(covariant StudentDetailScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.studentId != widget.studentId) {
-      _viewModel?.dispose();
-      _setupViewModel();
-    }
-  }
-
-  void _setupViewModel() {
-    if (widget.studentId != null) {
-      _viewModel = StudentDetailViewModel(
-        InjectionContainer.instance.studentFacade,
-        studentId: widget.studentId!,
-      );
-    } else {
-      _viewModel = null;
-    }
-  }
-
-  @override
-  void dispose() {
-    _viewModel?.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (widget.studentId == null || _viewModel == null) {
+    if (studentId == null) {
       return const Scaffold(
         body: Center(child: Text('Nenhum aluno selecionado ainda')),
       );
     }
 
+    final viewModel = InjectionContainer.instance.studentDetailViewModel;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      viewModel.loadStudent(studentId!);
+    });
+
     return Scaffold(
       body: SafeArea(
         child: Watch((context) {
-          final student = _viewModel!.student.value;
+          final student = viewModel.student.value;
+          final isLoading = viewModel.isLoading.value;
 
-          if (student == null) {
+          if (student == null || isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
 
@@ -75,6 +43,20 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    IconButton(
+                      onPressed: () => context.go('/cadastro/editar/${student.id}'),
+                      icon: const Icon(Icons.edit_rounded),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        side: BorderSide(color: Theme.of(context).dividerColor),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
                 _StudentHeader(student: student),
                 const SizedBox(height: 18),
                 _ScoreCard(student: student),
@@ -294,7 +276,6 @@ class _CriteriaScoreRow extends StatelessWidget {
   }
 }
 
-// Placeholder temporario - o CustomPainter do radar vem na proxima parte.
 class _AuraRadarCard extends StatelessWidget {
   final Student student;
 

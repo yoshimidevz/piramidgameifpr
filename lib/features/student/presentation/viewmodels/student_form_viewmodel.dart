@@ -10,13 +10,11 @@ class StudentFormViewModel {
   final StudentUseCasesFacade _facade;
 
   // Id do aluno em edicao, ou null se for cadastro novo.
-  final String? editingStudentId;
-
+  String? editingStudentId;
   StudentFormViewModel(this._facade, {this.editingStudentId}) {
     saveCommand = Command1<void, Student>(_save);
   }
 
-  // Campos do formulario, reativos.
   final name = signal('');
   final nickname = signal('');
   final course = signal(Course.info);
@@ -45,6 +43,42 @@ class StudentFormViewModel {
     criteriaScores[criteria]!.value = value;
   }
 
+  // Reseta tudo para o estado inicial (modo criacao).
+  void reset() {
+    editingStudentId = null;
+    name.value = '';
+    nickname.value = '';
+    course.value = Course.info;
+    classYear.value = 2024;
+    birthDate.value = null;
+    for (final s in criteriaScores.values) {
+      s.value = 0.0;
+    }
+    saveCommand.state.value = const CommandState();
+  }
+
+  // Carrega os dados de um aluno existente para edicao.
+  Future<void> loadForEditing(String studentId) async {
+    editingStudentId = studentId;
+
+    final result = await _facade.getStudentById(studentId);
+
+    result.when(
+      onSuccess: (student) {
+        name.value = student.name;
+        nickname.value = student.nickname;
+        course.value = student.course;
+        classYear.value = student.classYear;
+        birthDate.value = student.birthDate;
+        for (final entry in student.criteriaScores.entries) {
+          criteriaScores[entry.key]!.value = entry.value;
+        }
+      },
+      onFailure: (_) {
+      },
+    );
+  }
+
   Future<void> save() async {
     if (!isComplete.value) return;
     final student = Student(
@@ -67,17 +101,6 @@ class StudentFormViewModel {
       return _facade.updateStudent(student);
     }
     return _facade.createStudent(student);
-  }
-  void reset() {
-    name.value = '';
-    nickname.value = '';
-    course.value = Course.info;
-    classYear.value = 2024;
-    birthDate.value = null;
-    for (final s in criteriaScores.values) {
-      s.value = 0.0;
-    }
-    saveCommand.state.value = const CommandState();
   }
 
   void dispose() {
