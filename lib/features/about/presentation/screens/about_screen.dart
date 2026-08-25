@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/di/injection_container.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -26,7 +28,6 @@ class AboutScreen extends StatelessWidget {
                 child: const Icon(Icons.menu_book_rounded, color: Colors.white, size: 28),
               ),
               const SizedBox(height: 16),
-
               Text(
                 'Sobre o PiramidGame',
                 style: AppTextStyles.sora(
@@ -34,7 +35,6 @@ class AboutScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-
               Text(
                 'O PiramidGame é um projeto didático desenvolvido para o '
                 'IFPR – Campus Paranaguá. A ideia é transformar a convivência '
@@ -57,7 +57,6 @@ class AboutScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-
               _InfoCard(
                 icon: Icons.calculate_rounded,
                 iconColor: AppColors.green,
@@ -105,22 +104,6 @@ class AboutScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 14),
-
-              _InfoCard(
-                icon: Icons.phone_iphone_rounded,
-                iconColor: AppColors.red,
-                title: 'Dados 100% locais',
-                child: Text(
-                  'Todos os cadastros são armazenados apenas no seu '
-                  'dispositivo. Nada é enviado para servidores externos.',
-                  style: AppTextStyles.jakarta(
-                    fontSize: 13.5, fontWeight: FontWeight.w500, height: 1.5,
-                    color: theme.colorScheme.onSurface.withOpacity(.75),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-
               _InfoCard(
                 icon: Icons.dark_mode_rounded,
                 iconColor: AppColors.gold,
@@ -131,6 +114,32 @@ class AboutScreen extends StatelessWidget {
                   style: AppTextStyles.jakarta(
                     fontSize: 13.5, fontWeight: FontWeight.w500, height: 1.5,
                     color: theme.colorScheme.onSurface.withOpacity(.75),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    await InjectionContainer.instance.authViewModel.logout();
+                    if (context.mounted) context.go('/login');
+                  },
+                  icon: const Icon(Icons.logout_rounded, color: AppColors.red),
+                  label: Text(
+                    'Sair da conta',
+                    style: AppTextStyles.jakarta(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.red,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppColors.red),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
                   ),
                 ),
               ),

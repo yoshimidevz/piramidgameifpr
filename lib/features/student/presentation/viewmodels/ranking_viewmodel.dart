@@ -10,7 +10,6 @@ class RankingViewModel {
   RankingViewModel(this._facade) {
     loadRankingCommand = Command0<List<Student>>(_loadRanking);
     // Carrega automaticamente ao instanciar a ViewModel.
-    loadRankingCommand.execute();
   }
 
   late final Command0<List<Student>> loadRankingCommand;

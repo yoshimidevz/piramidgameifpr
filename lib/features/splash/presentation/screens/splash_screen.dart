@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/di/injection_container.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -14,14 +15,25 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Apos 2300ms, navega para a primeira aba (Inicio).
-    Future.delayed(const Duration(milliseconds: 2300), () {
-      if (mounted) context.go('/inicio');
+    Future.delayed(const Duration(milliseconds: 2300), () async {
+      if (!mounted) return;
+      await InjectionContainer.instance.authViewModel.checkAuthStatus();
+      if (!mounted) return;
+      final loggedIn =
+          InjectionContainer.instance.authViewModel.isLoggedIn.value;
+      if (loggedIn) {
+        print('DEBUG: antes do refresh, students = ${InjectionContainer.instance.rankingViewModel.students.value.length}');
+        await InjectionContainer.instance.rankingViewModel.refresh();
+        print('DEBUG: depois do refresh, students = ${InjectionContainer.instance.rankingViewModel.students.value.length}');
+      }
+      if (!mounted) return;
+      context.go(loggedIn ? '/inicio' : '/login');
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    print('DEBUG: SplashScreen build() rodou');
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textDim = isDark ? AppColors.darkTextDim : AppColors.lightTextDim;
     final surface2 = isDark ? AppColors.darkSurface2 : AppColors.lightSurface2;

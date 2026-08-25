@@ -6,6 +6,7 @@ import '../../features/student/presentation/screens/ranking/ranking_screen.dart'
 import '../../features/student/presentation/screens/student_form/student_form_screen.dart';
 import '../../features/student/presentation/screens/student_detail/student_detail_screen.dart';
 import '../../features/about/presentation/screens/about_screen.dart';
+import '../../features/auth/presentation/screens/login_screen.dart';
 import 'app_shell.dart';
 
 class AppRouter {
@@ -19,6 +20,10 @@ class AppRouter {
       GoRoute(
         path: '/',
         builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => const LoginScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {

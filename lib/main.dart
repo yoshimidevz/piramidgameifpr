@@ -5,9 +5,11 @@ import 'core/router/app_router.dart';
 import 'core/di/injection_container.dart';
 import '../../features/theme_settings/domain/entities/app_theme_mode.dart';
 import 'core/theme/app_scroll_behavior.dart';
+import 'core/network/api_client.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  ApiClient.instance.init();
   await InjectionContainer.instance.init();
   runApp(const PiramidGameApp());
 }

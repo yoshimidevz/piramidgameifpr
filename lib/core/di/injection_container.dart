@@ -22,6 +22,11 @@ import '../../features/theme_settings/domain/usecases/get_theme_mode_usecase.dar
 import '../../features/theme_settings/domain/usecases/toggle_theme_usecase.dart';
 import '../../features/theme_settings/facade/theme_usecases_facade.dart';
 import '../../features/theme_settings/presentation/viewmodels/theme_viewmodel.dart';
+import '../../features/auth/data/services/auth_service.dart';
+import '../../features/auth/data/repositories/auth_repository_impl.dart';
+import '../../features/auth/facade/auth_facade.dart';
+import '../../features/auth/presentation/viewmodels/auth_viewmodel.dart';
+import '../../features/student/data/repositories/student_repository_http_impl.dart';
 
 class InjectionContainer {
   InjectionContainer._();
@@ -43,6 +48,8 @@ class InjectionContainer {
   late final StudentDetailViewModel studentDetailViewModel;
   late final ThemeViewModel themeViewModel;
 
+  late final AuthViewModel authViewModel;
+
   bool _initialized = false;
 
   Future<void> init() async {
@@ -53,7 +60,7 @@ class InjectionContainer {
     _storageHelper = LocalStorageHelper();
 
     _studentLocalService = StudentSharedPrefsService(_storageHelper);
-    _studentRepository = StudentRepositoryImpl(_studentLocalService);
+    _studentRepository = StudentRepositoryHttpImpl();
     studentFacade = StudentUseCasesFacade(
       createStudent: CreateStudentUseCase(_studentRepository),
       updateStudent: UpdateStudentUseCase(_studentRepository),
@@ -74,6 +81,11 @@ class InjectionContainer {
     rankingViewModel = RankingViewModel(studentFacade);
     studentDetailViewModel = StudentDetailViewModel(studentFacade);
     themeViewModel = ThemeViewModel(themeFacade);
+
+    final authService = AuthService();
+    final authRepository = AuthRepositoryImpl(authService);
+    final authFacade = AuthFacade(authRepository);
+    authViewModel = AuthViewModel(authFacade);
 
     _initialized = true;
   }
