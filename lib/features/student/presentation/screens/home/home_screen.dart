@@ -19,8 +19,18 @@ class HomeScreen extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(22, 18, 22, 20),
           child: Watch((context) {
             final students = rankingViewModel.students.value;
+            final isLoading = rankingViewModel.loadRankingCommand.state.value.isRunning;
             final hasStudents = students.isNotEmpty;
             final leader = hasStudents ? students.first : null;
+
+            if (isLoading && students.isEmpty) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(40),
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            }
 
             return Column(
               children: [

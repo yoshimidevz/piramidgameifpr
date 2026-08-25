@@ -57,7 +57,10 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     result.when(
-      onSuccess: (_) => context.go('/inicio'),
+      onSuccess: (_) async {
+        await InjectionContainer.instance.rankingViewModel.refresh();
+        if (context.mounted) context.go('/inicio');
+      },
       onFailure: (failure) {
         setState(() {
           _isLoading = false;
