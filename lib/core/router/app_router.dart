@@ -8,6 +8,7 @@ import '../../features/student/presentation/screens/student_detail/student_detai
 import '../../features/about/presentation/screens/about_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/avaliacao/presentation/screens/avaliacao_screen.dart';
+import '../../features/avaliacao/presentation/screens/ranking_pessoal_screen.dart';
 import 'app_shell.dart';
 
 class AppRouter {
@@ -95,7 +96,15 @@ class AppRouter {
               ),
             ],
           ),
-          // Aba: Sobre
+          // Aba: 
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/ranking-pessoal',
+                builder: (context, state) => const RankingPessoalScreen(),
+              ),
+            ],
+          ),
           StatefulShellBranch(
             routes: [
               GoRoute(

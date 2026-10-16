@@ -16,10 +16,19 @@ class AppShell extends StatelessWidget {
       InjectionContainer.instance.studentFormViewModel.reset();
     }
 
+    if (index == 4) {
+      final uid = InjectionContainer.instance.authViewModel.currentUser.value?.uid;
+      if (uid != null) {
+        InjectionContainer.instance.rankingPessoalViewModel.refresh(uid);
+      }
+    }
     if (index == 3) {
       final currentStudent = InjectionContainer.instance.studentDetailViewModel.student.value;
       if (currentStudent != null) {
-        InjectionContainer.instance.studentDetailViewModel.loadStudent(currentStudent.id);
+        InjectionContainer.instance.studentDetailViewModel.loadStudent(
+          currentStudent.id,
+          avaliadorUid: InjectionContainer.instance.authViewModel.currentUser.value?.uid,
+        );
       }
     }
 
@@ -42,6 +51,7 @@ class AppShell extends StatelessWidget {
           NavigationDestination(icon: Icon(Icons.leaderboard_rounded), label: 'Ranking'),
           NavigationDestination(icon: Icon(Icons.add_circle_rounded), label: 'Cadastrar'),
           NavigationDestination(icon: Icon(Icons.account_circle_rounded), label: 'Aluno'),
+          NavigationDestination(icon: Icon(Icons.star_rounded), label: 'Meu Ranking'),
           NavigationDestination(icon: Icon(Icons.info_rounded), label: 'Sobre'),
         ],
       ),

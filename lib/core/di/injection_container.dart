@@ -33,6 +33,7 @@
   import '../../features/avaliacao/domain/usecases/calcular_ranking_global_usecase.dart';
   import '../../features/avaliacao/facade/avaliacao_facade.dart';
   import '../../features/avaliacao/presentation/viewmodels/avaliacao_viewmodel.dart';
+  import '../../features/avaliacao/presentation/viewmodels/ranking_pessoal_viewmodel.dart';
 
   class InjectionContainer {
     InjectionContainer._();
@@ -56,6 +57,7 @@
 
     late final AvaliacaoFacade avaliacaoFacade;
     late final AvaliacaoViewModel avaliacaoViewModel;
+    late final RankingPessoalViewModel rankingPessoalViewModel;
 
     bool _initialized = false;
 
@@ -90,6 +92,7 @@
             avaliacaoRepository, _studentRepository),
       );
       avaliacaoViewModel = AvaliacaoViewModel(avaliacaoFacade);
+      rankingPessoalViewModel = RankingPessoalViewModel(avaliacaoFacade);
 
       // Theme — SharedPreferences (permanece local)
       _themeLocalService = ThemeSharedPrefsService(_storageHelper);
