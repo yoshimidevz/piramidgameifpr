@@ -27,7 +27,8 @@ class StudentDetailScreen extends StatelessWidget {
     final viewModel = InjectionContainer.instance.studentDetailViewModel;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      viewModel.loadStudent(studentId!);
+      final uid = InjectionContainer.instance.authViewModel.currentUser.value?.uid;
+      viewModel.loadStudent(studentId!, avaliadorUid: uid);
     });
 
     return Scaffold(
@@ -101,6 +102,16 @@ class StudentDetailScreen extends StatelessWidget {
                       style: IconButton.styleFrom(
                         backgroundColor: Theme.of(context).colorScheme.surface,
                         side: BorderSide(color: Theme.of(context).dividerColor),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      onPressed: () => context.go('/aluno/${student.id}/avaliar'),
+                      icon: const Icon(Icons.star_rounded),
+                      style: IconButton.styleFrom(
+                        backgroundColor: AppColors.gold.withOpacity(.15),
+                        side: BorderSide(color: AppColors.gold.withOpacity(.4)),
+                        foregroundColor: AppColors.gold,
                       ),
                     ),
                   ],

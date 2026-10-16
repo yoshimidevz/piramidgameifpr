@@ -1,5 +1,4 @@
 import 'package:signals/signals.dart';
-import '../../../../core/command/command.dart';
 import '../../../../core/result/result.dart';
 import '../../domain/entities/auth_token.dart';
 import '../../facade/auth_facade.dart';
@@ -14,6 +13,9 @@ class AuthViewModel {
 
   Future<void> checkAuthStatus() async {
     final loggedIn = await _facade.isLoggedIn();
+    if (loggedIn) {
+      currentUser.value = _facade.getCurrentUser();
+    }
     isLoggedIn.value = loggedIn;
   }
 
@@ -32,6 +34,18 @@ class AuthViewModel {
   Future<Result<AuthToken>> register(
       String name, String email, String password) async {
     final result = await _facade.register(name, email, password);
+    result.when(
+      onSuccess: (token) {
+        currentUser.value = token;
+        isLoggedIn.value = true;
+      },
+      onFailure: (_) {},
+    );
+    return result;
+  }
+
+  Future<Result<AuthToken>> loginWithGoogle() async {
+    final result = await _facade.loginWithGoogle();
     result.when(
       onSuccess: (token) {
         currentUser.value = token;

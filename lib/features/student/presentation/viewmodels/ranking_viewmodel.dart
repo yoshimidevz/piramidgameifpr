@@ -2,35 +2,29 @@ import 'package:signals/signals.dart';
 import '../../../../core/command/command.dart';
 import '../../../../core/result/result.dart';
 import '../../domain/entities/student.dart';
-import '../../facade/student_usecases_facade.dart';
+import '../../../avaliacao/facade/avaliacao_facade.dart';
 
 class RankingViewModel {
-  final StudentUseCasesFacade _facade;
+  final AvaliacaoFacade _avaliacaoFacade;
 
-  RankingViewModel(this._facade) {
+  RankingViewModel(this._avaliacaoFacade) {
     loadRankingCommand = Command0<List<Student>>(_loadRanking);
-    // Carrega automaticamente ao instanciar a ViewModel.
   }
 
   late final Command0<List<Student>> loadRankingCommand;
 
-  // Lista de alunos ja ordenada (Nivel Lenda decrescente).
   final students = signal<List<Student>>([]);
 
-  // Chamado pelo pull-to-refresh.
   Future<void> refresh() => loadRankingCommand.execute();
 
   Future<Result<List<Student>>> _loadRanking() async {
-    final result = await _facade.calculateRanking();
+    final result = await _avaliacaoFacade.rankingGlobal();
 
     result.when(
       onSuccess: (rankedStudents) {
         students.value = rankedStudents;
       },
-      onFailure: (_) {
-        // Mantem a lista anterior em tela; o erro fica disponivel
-        // via loadRankingCommand.state.error para a UI exibir se quiser.
-      },
+      onFailure: (_) {},
     );
 
     return result;

@@ -10,7 +10,7 @@ class StudentRepositoryHttpImpl implements StudentRepository {
   final Dio _dio = ApiClient.instance.dio;
 
   @override
-  Future<Result<List<Student>>> getAll() async {
+  Future<Result<List<Student>>> getAll() async { 
     try {
       final response = await _dio.get('/students');
       final list = (response.data as List)

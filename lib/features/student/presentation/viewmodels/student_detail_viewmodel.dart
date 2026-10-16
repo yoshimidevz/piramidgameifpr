@@ -3,11 +3,13 @@ import '../../../../core/command/command.dart';
 import '../../../../core/result/result.dart';
 import '../../domain/entities/student.dart';
 import '../../facade/student_usecases_facade.dart';
+import '../../../avaliacao/facade/avaliacao_facade.dart';
 
 class StudentDetailViewModel {
   final StudentUseCasesFacade _facade;
+  final AvaliacaoFacade _avaliacaoFacade;
 
-  StudentDetailViewModel(this._facade) {
+  StudentDetailViewModel(this._facade, this._avaliacaoFacade) {
     deleteCommand = Command1<void, String>(_delete);
   }
 
@@ -16,16 +18,45 @@ class StudentDetailViewModel {
 
   late final Command1<void, String> deleteCommand;
 
-  Future<void> loadStudent(String studentId) async {
+  Future<void> loadStudent(String studentId, {String? avaliadorUid}) async {
     isLoading.value = true;
 
     final result = await _facade.getStudentById(studentId);
 
-    result.when(
-      onSuccess: (loadedStudent) {
-        student.value = loadedStudent;
+    await result.when(
+      onSuccess: (loadedStudent) async {
+        // Se tiver uid do usuario logado, busca as notas da avaliacao dele
+        if (avaliadorUid != null) {
+          final avaliacaoResult = await _avaliacaoFacade.buscar(
+              avaliadorUid, studentId);
+
+          avaliacaoResult.when(
+            onSuccess: (avaliacao) {
+              if (avaliacao != null) {
+                // Substitui os criteriaScores pelas notas reais da avaliacao
+                student.value = Student(
+                  id: loadedStudent.id,
+                  name: loadedStudent.name,
+                  nickname: loadedStudent.nickname,
+                  course: loadedStudent.course,
+                  classYear: loadedStudent.classYear,
+                  birthDate: loadedStudent.birthDate,
+                  criteriaScores: avaliacao.notas,
+                );
+              } else {
+                // Pessoa ainda nao avaliada pelo usuario
+                student.value = loadedStudent;
+              }
+            },
+            onFailure: (_) {
+              student.value = loadedStudent;
+            },
+          );
+        } else {
+          student.value = loadedStudent;
+        }
       },
-      onFailure: (failure) {
+      onFailure: (failure) async {
         student.value = null;
       },
     );

@@ -7,6 +7,7 @@ import '../../features/student/presentation/screens/student_form/student_form_sc
 import '../../features/student/presentation/screens/student_detail/student_detail_screen.dart';
 import '../../features/about/presentation/screens/about_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/avaliacao/presentation/screens/avaliacao_screen.dart';
 import 'app_shell.dart';
 
 class AppRouter {
@@ -71,7 +72,8 @@ class AppRouter {
             routes: [
               GoRoute(
                 path: '/aluno',
-                builder: (context, state) => const StudentDetailScreen(studentId: null),
+                builder: (context, state) =>
+                    const StudentDetailScreen(studentId: null),
                 routes: [
                   GoRoute(
                     path: ':id',
@@ -79,6 +81,15 @@ class AppRouter {
                       final id = state.pathParameters['id']!;
                       return StudentDetailScreen(studentId: id);
                     },
+                    routes: [
+                      GoRoute(
+                        path: 'avaliar',
+                        builder: (context, state) {
+                          final id = state.pathParameters['id']!;
+                          return AvaliacaoScreen(pessoaId: id);
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),

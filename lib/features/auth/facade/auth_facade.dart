@@ -13,7 +13,12 @@ class AuthFacade {
   Future<Result<AuthToken>> register(String name, String email, String password) =>
       _repository.register(name, email, password);
 
+  Future<Result<AuthToken>> loginWithGoogle() =>
+      _repository.loginWithGoogle();
+
   Future<Result<void>> logout() => _repository.logout();
 
   Future<bool> isLoggedIn() => _repository.isLoggedIn();
+
+  AuthToken? getCurrentUser() => _repository.getCurrentUser();
 }

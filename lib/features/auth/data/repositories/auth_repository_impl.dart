@@ -1,4 +1,4 @@
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/result/result.dart';
 import '../../domain/entities/auth_token.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -11,12 +11,9 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Result<AuthToken>> login(String email, String password) async {
-    final result = await _service.login(email, password);
+    final result = await _service.loginWithEmail(email, password);
     return result.when(
-      onSuccess: (model) async {
-        await _saveToken(model.token);
-        return Result.success(model.toEntity());
-      },
+      onSuccess: (user) => Result.success(_toToken(user)),
       onFailure: (failure) => Result.failure(failure),
     );
   }
@@ -24,36 +21,46 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Result<AuthToken>> register(
       String name, String email, String password) async {
-    final result = await _service.register(name, email, password);
+    final result = await _service.registerWithEmail(name, email, password);
     return result.when(
-      onSuccess: (model) async {
-        await _saveToken(model.token);
-        return Result.success(model.toEntity());
-      },
+      onSuccess: (user) => Result.success(_toToken(user)),
+      onFailure: (failure) => Result.failure(failure),
+    );
+  }
+
+  @override
+  Future<Result<AuthToken>> loginWithGoogle() async {
+    final result = await _service.loginWithGoogle();
+    return result.when(
+      onSuccess: (user) => Result.success(_toToken(user)),
       onFailure: (failure) => Result.failure(failure),
     );
   }
 
   @override
   Future<Result<void>> logout() async {
-    final result = await _service.logout();
-    await _clearToken();
-    return result;
+    await _service.logout();
+    return const Result.success(null);
   }
 
   @override
   Future<bool> isLoggedIn() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('auth_token') != null;
+    return _service.isLoggedIn;
   }
 
-  Future<void> _saveToken(String token) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('auth_token', token);
+  @override
+  AuthToken? getCurrentUser() {
+    final user = _service.currentUser;
+    if (user == null) return null;
+    return _toToken(user);
   }
 
-  Future<void> _clearToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
+  AuthToken _toToken(User user) {
+    return AuthToken(
+      uid: user.uid,
+      name: user.displayName ?? user.email?.split('@').first ?? 'Usuário',
+      email: user.email ?? '',
+      photoUrl: user.photoURL,
+    );
   }
 }

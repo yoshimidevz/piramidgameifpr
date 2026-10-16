@@ -2,8 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_constants.dart';
 
-// Cliente HTTP global com interceptor JWT automatico.
-// Toda requisicao autenticada inclui o token salvo no SharedPreferences.
 class ApiClient {
   ApiClient._();
 

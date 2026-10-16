@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:signals/signals_flutter.dart';
 import '../di/injection_container.dart';
-import '../theme/app_colors.dart';
-import '../../features/theme_settings/domain/entities/app_theme_mode.dart';
 
 class AppShell extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
@@ -33,20 +30,10 @@ class AppShell extends StatelessWidget {
   }
 
   @override
+    @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          navigationShell,
-          Positioned(
-            top: 8,
-            right: 16,
-            child: SafeArea(
-              child: _ThemeToggleButton(),
-            ),
-          ),
-        ],
-      ),
+      body: navigationShell,
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
         onDestinationSelected: _onTap,
@@ -59,32 +46,5 @@ class AppShell extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-class _ThemeToggleButton extends StatelessWidget {
-  const _ThemeToggleButton();
-
-  @override
-  Widget build(BuildContext context) {
-    final viewModel = InjectionContainer.instance.themeViewModel;
-
-    return Watch((context) {
-      final isDark = viewModel.mode.value.isDark;
-
-      return Container(
-        decoration: BoxDecoration(
-          color: AppColors.green.withOpacity(.12),
-          borderRadius: BorderRadius.circular(99),
-        ),
-        child: IconButton(
-          onPressed: viewModel.toggle,
-          icon: Icon(
-            isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
-            color: AppColors.green,
-          ),
-        ),
-      );
-    });
   }
 }

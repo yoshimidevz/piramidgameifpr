@@ -3,7 +3,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection_container.dart';
-
+import 'package:signals/signals_flutter.dart';
+import '../../../theme_settings/domain/entities/app_theme_mode.dart';
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
@@ -108,14 +109,26 @@ class AboutScreen extends StatelessWidget {
                 icon: Icons.dark_mode_rounded,
                 iconColor: AppColors.gold,
                 title: 'Tema claro e escuro',
-                child: Text(
-                  'Use o botão no topo da tela para alternar entre os '
-                  'temas claro e escuro, a qualquer momento.',
-                  style: AppTextStyles.jakarta(
-                    fontSize: 13.5, fontWeight: FontWeight.w500, height: 1.5,
-                    color: theme.colorScheme.onSurface.withOpacity(.75),
-                  ),
-                ),
+                child: Watch((context) {
+                  final isDark = InjectionContainer.instance.themeViewModel.mode.value.isDark;
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        isDark ? 'Tema escuro ativo' : 'Tema claro ativo',
+                        style: AppTextStyles.jakarta(
+                          fontSize: 13.5, fontWeight: FontWeight.w500,
+                          color: theme.colorScheme.onSurface.withOpacity(.75),
+                        ),
+                      ),
+                      Switch(
+                        value: isDark,
+                        onChanged: (_) => InjectionContainer.instance.themeViewModel.toggle(),
+                        activeColor: AppColors.green,
+                      ),
+                    ],
+                  );
+                }),
               ),
               const SizedBox(height: 20),
               SizedBox(

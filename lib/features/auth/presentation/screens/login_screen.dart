@@ -18,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _isRegisterMode = false;
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
   String? _errorMessage;
 
   @override
@@ -59,11 +60,36 @@ class _LoginScreenState extends State<LoginScreen> {
     result.when(
       onSuccess: (_) async {
         await InjectionContainer.instance.rankingViewModel.refresh();
-        if (context.mounted) context.go('/inicio');
+        if (mounted) context.go('/inicio');
       },
       onFailure: (failure) {
         setState(() {
           _isLoading = false;
+          _errorMessage = failure.message;
+        });
+      },
+    );
+  }
+
+  Future<void> _loginWithGoogle() async {
+    setState(() {
+      _isGoogleLoading = true;
+      _errorMessage = null;
+    });
+
+    final viewModel = InjectionContainer.instance.authViewModel;
+    final result = await viewModel.loginWithGoogle();
+
+    if (!mounted) return;
+
+    result.when(
+      onSuccess: (_) async {
+        await InjectionContainer.instance.rankingViewModel.refresh();
+        if (mounted) context.go('/inicio');
+      },
+      onFailure: (failure) {
+        setState(() {
+          _isGoogleLoading = false;
           _errorMessage = failure.message;
         });
       },
@@ -156,6 +182,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 20),
 
+              // Botão email/senha
               SizedBox(
                 width: double.infinity,
                 height: 52,
@@ -184,6 +211,65 @@ class _LoginScreenState extends State<LoginScreen> {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // Divisor
+              Row(
+                children: [
+                  Expanded(child: Divider(color: theme.dividerColor)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Text(
+                      'ou',
+                      style: AppTextStyles.jakarta(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: theme.colorScheme.onSurface.withOpacity(.5),
+                      ),
+                    ),
+                  ),
+                  Expanded(child: Divider(color: theme.dividerColor)),
+                ],
+              ),
+
+              const SizedBox(height: 12),
+
+              // Botão Google
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: OutlinedButton.icon(
+                  onPressed: _isGoogleLoading ? null : _loginWithGoogle,
+                  icon: _isGoogleLoading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Image.network(
+                          'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
+                          width: 20,
+                          height: 20,
+                          errorBuilder: (_, __, ___) =>
+                              const Icon(Icons.g_mobiledata_rounded, size: 22),
+                        ),
+                  label: Text(
+                    'Entrar com Google',
+                    style: AppTextStyles.jakarta(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: theme.dividerColor, width: 1.5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
                 ),
               ),
 
