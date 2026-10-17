@@ -37,6 +37,20 @@ class FirestoreStudentService {
       return Result.failure(Failure('Erro ao buscar pessoa: $e'));
     }
   }
+  
+  Future<Result<Student?>> buscarPorArroba(String arroba) async {
+    try {
+      final snapshot = await _pessoas
+          .where('arroba', isEqualTo: arroba)
+          .limit(1)
+          .get();
+      if (snapshot.docs.isEmpty) return const Result.success(null);
+      final student = _fromDoc(snapshot.docs.first);
+      return Result.success(student);
+    } catch (e) {
+      return Result.failure(Failure('Erro ao buscar por @: $e'));
+    }
+  }
 
   Future<Result<void>> create(Student student) async {
     try {
@@ -73,6 +87,7 @@ class FirestoreStudentService {
       'turma': student.classYear,
       'dataNascimento': student.birthDate.toIso8601String(),
       'criadoPor': student.criadoPor,
+      'arroba': student.arroba,
     };
   }
 
@@ -90,6 +105,7 @@ class FirestoreStudentService {
           for (final c in CriteriaType.values) c: 0.0
         },
         criadoPor: data['criadoPor'] as String?,
+        arroba: data['arroba'] as String?,
       );
     } catch (e) {
       return null;

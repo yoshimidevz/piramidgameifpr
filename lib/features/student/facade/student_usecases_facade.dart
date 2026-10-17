@@ -6,6 +6,7 @@ import '../domain/usecases/delete_student_usecase.dart';
 import '../domain/usecases/get_all_students_usecase.dart';
 import '../domain/usecases/get_student_by_id_usecase.dart';
 import '../domain/usecases/calculate_ranking_usecase.dart';
+import '../domain/usecases/buscar_por_arroba_usecase.dart';
 
 class StudentUseCasesFacade {
   final CreateStudentUseCase _createStudent;
@@ -14,6 +15,7 @@ class StudentUseCasesFacade {
   final GetAllStudentsUseCase _getAllStudents;
   final GetStudentByIdUseCase _getStudentById;
   final CalculateRankingUseCase _calculateRanking;
+  final BuscarPorArrobaUseCase _buscarPorArroba;
 
   StudentUseCasesFacade({
     required CreateStudentUseCase createStudent,
@@ -22,12 +24,14 @@ class StudentUseCasesFacade {
     required GetAllStudentsUseCase getAllStudents,
     required GetStudentByIdUseCase getStudentById,
     required CalculateRankingUseCase calculateRanking,
+    required BuscarPorArrobaUseCase buscarPorArroba,
   })  : _createStudent = createStudent,
         _updateStudent = updateStudent,
         _deleteStudent = deleteStudent,
         _getAllStudents = getAllStudents,
         _getStudentById = getStudentById,
-        _calculateRanking = calculateRanking;
+        _calculateRanking = calculateRanking,
+        _buscarPorArroba = buscarPorArroba;
 
   Future<Result<void>> createStudent(Student student) {
     return _createStudent(student);
@@ -51,5 +55,9 @@ class StudentUseCasesFacade {
 
   Future<Result<List<Student>>> calculateRanking() {
     return _calculateRanking();
+  }
+  
+  Future<Result<Student?>> buscarPorArroba(String arroba) {
+    return _buscarPorArroba(arroba);
   }
 }

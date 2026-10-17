@@ -22,4 +22,8 @@ class StudentRepositoryFirestoreImpl implements StudentRepository {
 
   @override
   Future<Result<void>> delete(String id) => _service.delete(id);
+
+  @override
+  Future<Result<Student?>> buscarPorArroba(String arroba) => _service.buscarPorArroba(arroba);
+  
 }

@@ -127,4 +127,8 @@ class StudentRepositoryHttpImpl implements StudentRepository {
     }
     return map;
   }
+  @override
+  Future<Result<Student?>> buscarPorArroba(String arroba) async {
+    return const Result.success(null);
+  }
 }

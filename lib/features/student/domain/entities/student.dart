@@ -31,6 +31,7 @@ class Student {
   final DateTime birthDate;
   final Map<CriteriaType, double> criteriaScores;
   final String? criadoPor; // uid do usuario que cadastrou essa pessoa
+  final String? arroba;
 
   const Student({
     required this.id,
@@ -41,6 +42,7 @@ class Student {
     required this.birthDate,
     required this.criteriaScores,
     this.criadoPor,
+    this.arroba,
   });
 
   double get totalScore {
@@ -61,6 +63,7 @@ class Student {
     DateTime? birthDate,
     Map<CriteriaType, double>? criteriaScores,
     String? criadoPor,
+    String? arroba,
   }) {
     return Student(
       id: id ?? this.id,
@@ -71,6 +74,7 @@ class Student {
       birthDate: birthDate ?? this.birthDate,
       criteriaScores: criteriaScores ?? this.criteriaScores,
       criadoPor: criadoPor ?? this.criadoPor,
+      arroba: arroba ?? this.arroba,
     );
   }
 }

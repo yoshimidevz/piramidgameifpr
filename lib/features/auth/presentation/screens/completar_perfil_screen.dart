@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/di/injection_container.dart';
+import '../../../../../core/extensions/string_extensions.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_text_styles.dart';
 import '../../../student/domain/entities/popularity_criteria.dart';
 import '../../../student/domain/entities/student.dart';
 import '../../domain/entities/usuario.dart';
-import '../../data/services/firestore_usuario_service.dart';
-
 
 class CompletarPerfilScreen extends StatefulWidget {
   const CompletarPerfilScreen({super.key});
@@ -24,10 +23,13 @@ class _CompletarPerfilScreenState extends State<CompletarPerfilScreen> {
   bool _isLoading = false;
   String? _errorMessage;
 
+  // Estado do vinculo com perfil existente
+  Student? _perfilExistente;
+  bool _mostrandoConfirmacaoVinculo = false;
+
   @override
   void initState() {
     super.initState();
-    // Pre-preenche o nome com o nome do Google/Auth se disponivel
     final user = InjectionContainer.instance.authViewModel.currentUser.value;
     if (user != null && user.name.isNotEmpty) {
       _nomeController.text = user.name;
@@ -53,16 +55,77 @@ class _CompletarPerfilScreenState extends State<CompletarPerfilScreen> {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
+      _mostrandoConfirmacaoVinculo = false;
+      _perfilExistente = null;
     });
 
     final uid = InjectionContainer.instance.authViewModel.currentUser.value?.uid;
     final email = InjectionContainer.instance.authViewModel.currentUser.value?.email;
     final fotoUrl = InjectionContainer.instance.authViewModel.currentUser.value?.photoUrl;
-    late final FirestoreUsuarioService firestoreUsuarioService;
 
     if (uid == null) return;
 
-    // Cria a pessoa no ranking
+    // Gera o @ automaticamente
+    final arroba = gerarArroba(nome, _curso.label, _turma);
+
+    // Verifica se ja existe um perfil com esse @
+    final existenteResult = await InjectionContainer.instance.studentFacade.buscarPorArroba(arroba);
+
+    if (!mounted) return;
+
+    final existente = existenteResult.when(
+      onSuccess: (s) => s,
+      onFailure: (_) => null,
+    );
+
+    if (existente != null) {
+      // Perfil ja existe — pergunta se é a mesma pessoa
+      setState(() {
+        _isLoading = false;
+        _perfilExistente = existente;
+        _mostrandoConfirmacaoVinculo = true;
+      });
+      return;
+    }
+
+    await _criarPerfil(uid, email, fotoUrl, nome, apelido, arroba);
+  }
+
+  Future<void> _vincularPerfilExistente() async {
+    final uid = InjectionContainer.instance.authViewModel.currentUser.value?.uid;
+    final email = InjectionContainer.instance.authViewModel.currentUser.value?.email;
+    final fotoUrl = InjectionContainer.instance.authViewModel.currentUser.value?.photoUrl;
+
+    if (uid == null || _perfilExistente == null) return;
+
+    setState(() {
+      _isLoading = true;
+      _mostrandoConfirmacaoVinculo = false;
+    });
+
+    // Vincula o uid ao perfil existente
+    final usuario = Usuario(
+      uid: uid,
+      nome: _perfilExistente!.name,
+      email: email ?? '',
+      fotoUrl: fotoUrl,
+      curso: _perfilExistente!.course.name,
+      turma: _perfilExistente!.classYear,
+      pessoaId: _perfilExistente!.id,
+    );
+
+    await InjectionContainer.instance.firestoreUsuarioService.salvar(usuario);
+
+    if (!mounted) return;
+
+    await InjectionContainer.instance.rankingViewModel.refresh();
+    context.go('/inicio');
+  }
+
+  Future<void> _criarPerfil(
+    String uid, String? email, String? fotoUrl,
+    String nome, String apelido, String arroba,
+  ) async {
     final pessoaId = '${uid}_pessoa';
     final student = Student(
       id: pessoaId,
@@ -70,31 +133,18 @@ class _CompletarPerfilScreenState extends State<CompletarPerfilScreen> {
       nickname: apelido,
       course: _curso,
       classYear: _turma,
-      birthDate: DateTime(2000), // data generica, pode ser editada depois
-      criteriaScores: {
-        for (final c in CriteriaType.values) c: 1.0
-      },
+      birthDate: DateTime(2000),
+      criteriaScores: {for (final c in CriteriaType.values) c: 1.0},
       criadoPor: uid,
+      arroba: arroba,
     );
 
-    final studentResult = await InjectionContainer.instance.studentFacade.createStudent(student);
-
-    if (studentResult.isFailure) {
-      studentResult.when(
-        onSuccess: (_) {},
-        onFailure: (failure) => print('DEBUG: erro = ${failure.message}'),
-      );
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Erro ao criar perfil no ranking';
-      });
-      return;
-    }
+    final studentResult =
+        await InjectionContainer.instance.studentFacade.createStudent(student);
 
     if (!mounted) return;
 
     if (studentResult.isFailure) {
-      print('DEBUG: erro = ${studentResult}');  
       setState(() {
         _isLoading = false;
         _errorMessage = 'Erro ao criar perfil no ranking';
@@ -102,7 +152,6 @@ class _CompletarPerfilScreenState extends State<CompletarPerfilScreen> {
       return;
     }
 
-    // Salva o usuario no Firestore com vinculo a pessoa
     final usuario = Usuario(
       uid: uid,
       nome: nome,
@@ -113,8 +162,7 @@ class _CompletarPerfilScreenState extends State<CompletarPerfilScreen> {
       pessoaId: pessoaId,
     );
 
-    firestoreUsuarioService = FirestoreUsuarioService();    
-    await firestoreUsuarioService.salvar(usuario);
+    await InjectionContainer.instance.firestoreUsuarioService.salvar(usuario);
 
     if (!mounted) return;
 
@@ -160,7 +208,79 @@ class _CompletarPerfilScreenState extends State<CompletarPerfilScreen> {
               ),
               const SizedBox(height: 28),
 
-              // Nome
+              // Card de confirmacao de vinculo (aparece se @ ja existe)
+              if (_mostrandoConfirmacaoVinculo && _perfilExistente != null) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.gold.withOpacity(.1),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.gold.withOpacity(.4)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.person_search_rounded, color: AppColors.gold),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Perfil encontrado!',
+                            style: AppTextStyles.jakarta(
+                              fontSize: 14, fontWeight: FontWeight.w800,
+                              color: AppColors.gold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Já existe um perfil com o nome "${_perfilExistente!.name}" '
+                        '(${_perfilExistente!.course.label} ${_perfilExistente!.classYear}) '
+                        'no ranking. Esse perfil é você?',
+                        style: AppTextStyles.jakarta(
+                          fontSize: 13.5, fontWeight: FontWeight.w500,
+                          color: theme.colorScheme.onSurface.withOpacity(.8),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => setState(() {
+                                _mostrandoConfirmacaoVinculo = false;
+                                _perfilExistente = null;
+                                _errorMessage = 'Não é possível criar um perfil com os mesmos dados. Verifique suas informações.';
+                              }),
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(color: theme.dividerColor),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                              child: const Text('Não sou eu'),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: _vincularPerfilExistente,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.green,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                              child: const Text('Sou eu!'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+
               Text('Nome completo', style: AppTextStyles.jakarta(fontSize: 13, fontWeight: FontWeight.w700)),
               const SizedBox(height: 6),
               TextField(
@@ -175,7 +295,6 @@ class _CompletarPerfilScreenState extends State<CompletarPerfilScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Apelido
               Text('Apelido (opcional)', style: AppTextStyles.jakarta(fontSize: 13, fontWeight: FontWeight.w700)),
               const SizedBox(height: 6),
               TextField(
@@ -190,7 +309,6 @@ class _CompletarPerfilScreenState extends State<CompletarPerfilScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Curso
               Text('Curso', style: AppTextStyles.jakarta(fontSize: 13, fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
               Wrap(
@@ -205,9 +323,7 @@ class _CompletarPerfilScreenState extends State<CompletarPerfilScreen> {
                       decoration: BoxDecoration(
                         color: selected ? AppColors.green : theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: selected ? AppColors.green : theme.dividerColor,
-                        ),
+                        border: Border.all(color: selected ? AppColors.green : theme.dividerColor),
                       ),
                       child: Text(
                         c.label,
@@ -222,40 +338,34 @@ class _CompletarPerfilScreenState extends State<CompletarPerfilScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Turma/Ano
               Text('Turma (ano de entrada)', style: AppTextStyles.jakarta(fontSize: 13, fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
-                  children: List.generate(
-                    2026 - 1998 + 1,
-                    (i) {
-                      final ano = 1998 + i;
-                      final selected = _turma == ano;
-                      return GestureDetector(
-                        onTap: () => setState(() => _turma = ano),
-                        child: Container(
-                          margin: const EdgeInsets.only(right: 8),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: selected ? AppColors.green : theme.colorScheme.surface,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: selected ? AppColors.green : theme.dividerColor,
-                            ),
-                          ),
-                          child: Text(
-                            '$ano',
-                            style: AppTextStyles.jakarta(
-                              fontSize: 13, fontWeight: FontWeight.w700,
-                              color: selected ? Colors.white : theme.colorScheme.onSurface,
-                            ),
+                  children: List.generate(2026 - 1998 + 1, (i) {
+                    final ano = 1998 + i;
+                    final selected = _turma == ano;
+                    return GestureDetector(
+                      onTap: () => setState(() => _turma = ano),
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: selected ? AppColors.green : theme.colorScheme.surface,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: selected ? AppColors.green : theme.dividerColor),
+                        ),
+                        child: Text(
+                          '$ano',
+                          style: AppTextStyles.jakarta(
+                            fontSize: 13, fontWeight: FontWeight.w700,
+                            color: selected ? Colors.white : theme.colorScheme.onSurface,
                           ),
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  }),
                 ),
               ),
               const SizedBox(height: 16),
@@ -287,9 +397,7 @@ class _CompletarPerfilScreenState extends State<CompletarPerfilScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.green,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
                   child: _isLoading
                       ? const SizedBox(

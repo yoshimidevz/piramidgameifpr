@@ -9,4 +9,5 @@ abstract class StudentRepository {
   Future<Result<void>> create(Student student);
   Future<Result<void>> update(Student student);
   Future<Result<void>> delete(String id);
+  Future<Result<Student?>> buscarPorArroba(String arroba);
 }

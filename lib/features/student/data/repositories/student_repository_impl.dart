@@ -88,4 +88,8 @@ class StudentRepositoryImpl implements StudentRepository {
       onFailure: (failure) async => Result.failure(failure),
     );
   }
+    @override
+  Future<Result<Student?>> buscarPorArroba(String arroba) async {
+    return const Result.success(null); // nao implementado no legado
+  }
 }

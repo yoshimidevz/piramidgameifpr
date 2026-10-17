@@ -35,6 +35,7 @@
   import '../../features/avaliacao/facade/avaliacao_facade.dart';
   import '../../features/avaliacao/presentation/viewmodels/avaliacao_viewmodel.dart';
   import '../../features/avaliacao/presentation/viewmodels/ranking_pessoal_viewmodel.dart';
+  import '../../features/student/domain/usecases/buscar_por_arroba_usecase.dart';
 
   class InjectionContainer {
     InjectionContainer._();
@@ -60,6 +61,7 @@
     late final AvaliacaoViewModel avaliacaoViewModel;
     late final RankingPessoalViewModel rankingPessoalViewModel;
     late final FirestoreUsuarioService firestoreUsuarioService;
+    
 
     bool _initialized = false;
 
@@ -81,6 +83,7 @@
         getAllStudents: GetAllStudentsUseCase(_studentRepository),
         getStudentById: GetStudentByIdUseCase(_studentRepository),
         calculateRanking: CalculateRankingUseCase(_studentRepository),
+        buscarPorArroba: BuscarPorArrobaUseCase(_studentRepository)
       );
 
       final firestoreAvaliacaoService = FirestoreAvaliacaoService();
