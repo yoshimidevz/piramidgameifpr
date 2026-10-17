@@ -72,6 +72,7 @@ class FirestoreStudentService {
       'curso': student.course.name,
       'turma': student.classYear,
       'dataNascimento': student.birthDate.toIso8601String(),
+      'criadoPor': student.criadoPor,
     };
   }
 
@@ -88,6 +89,7 @@ class FirestoreStudentService {
         criteriaScores: {
           for (final c in CriteriaType.values) c: 0.0
         },
+        criadoPor: data['criadoPor'] as String?,
       );
     } catch (e) {
       return null;

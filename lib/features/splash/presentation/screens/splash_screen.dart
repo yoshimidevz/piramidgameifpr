@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/di/injection_container.dart';
-
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -19,12 +18,32 @@ class _SplashScreenState extends State<SplashScreen> {
       if (!mounted) return;
       await InjectionContainer.instance.authViewModel.checkAuthStatus();
       if (!mounted) return;
+
       final loggedIn = InjectionContainer.instance.authViewModel.isLoggedIn.value;
-      if (loggedIn) {
-        await InjectionContainer.instance.rankingViewModel.refresh();
+
+      if (!loggedIn) {
+        context.go('/login');
+        return;
       }
+
+      // Verifica se o usuario ja completou o perfil
+      final uid = InjectionContainer.instance.authViewModel.currentUser.value?.uid;
+      final perfilCompleto = uid != null
+          ? await InjectionContainer.instance.firestoreUsuarioService.perfilCompleto(uid)
+          : false;
+      print('DEBUG: uid = $uid');
+      print('DEBUG: perfilCompleto = $perfilCompleto');
+
       if (!mounted) return;
-      context.go(loggedIn ? '/inicio' : '/login');
+
+      if (!perfilCompleto) {
+        context.go('/completar-perfil');
+        return;
+      }
+
+      await InjectionContainer.instance.rankingViewModel.refresh();
+      if (!mounted) return;
+      context.go('/inicio');
     });
   }
 

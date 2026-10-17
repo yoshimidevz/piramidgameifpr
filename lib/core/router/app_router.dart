@@ -9,6 +9,7 @@ import '../../features/about/presentation/screens/about_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/avaliacao/presentation/screens/avaliacao_screen.dart';
 import '../../features/avaliacao/presentation/screens/ranking_pessoal_screen.dart';
+import '../../features/auth/presentation/screens/completar_perfil_screen.dart';
 import 'app_shell.dart';
 
 class AppRouter {
@@ -26,6 +27,10 @@ class AppRouter {
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/completar-perfil',
+        builder: (context, state) => const CompletarPerfilScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {

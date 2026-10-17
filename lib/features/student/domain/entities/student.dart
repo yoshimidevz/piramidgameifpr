@@ -1,7 +1,6 @@
 import 'popularity_criteria.dart';
 import 'student_tier.dart';
 
-// Cursos disponíveis no campus, conforme especificação.
 enum Course { info, mec, mamb, prod, tads, tga }
 
 extension CourseLabel on Course {
@@ -23,7 +22,6 @@ extension CourseLabel on Course {
   }
 }
 
-// Entidade de domínio. Sem dependência de Flutter, JSON ou SharedPreferences.
 class Student {
   final String id;
   final String name;
@@ -32,6 +30,7 @@ class Student {
   final int classYear;
   final DateTime birthDate;
   final Map<CriteriaType, double> criteriaScores;
+  final String? criadoPor; // uid do usuario que cadastrou essa pessoa
 
   const Student({
     required this.id,
@@ -41,15 +40,17 @@ class Student {
     required this.classYear,
     required this.birthDate,
     required this.criteriaScores,
+    this.criadoPor,
   });
 
-  // Soma das notas dos 15 critérios = Nível Lenda.
   double get totalScore {
     return criteriaScores.values.fold(0.0, (sum, score) => sum + score);
   }
 
-  // Classificação (Novato/Popular/Ídolo/Lenda) com base no totalScore.
   StudentTier get tier => StudentTierInfo.fromScore(totalScore);
+
+  // Retorna true se o uid passado for o mesmo que cadastrou essa pessoa
+  bool isCriadoPor(String uid) => criadoPor == uid;
 
   Student copyWith({
     String? id,
@@ -59,6 +60,7 @@ class Student {
     int? classYear,
     DateTime? birthDate,
     Map<CriteriaType, double>? criteriaScores,
+    String? criadoPor,
   }) {
     return Student(
       id: id ?? this.id,
@@ -68,6 +70,7 @@ class Student {
       classYear: classYear ?? this.classYear,
       birthDate: birthDate ?? this.birthDate,
       criteriaScores: criteriaScores ?? this.criteriaScores,
+      criadoPor: criadoPor ?? this.criadoPor,
     );
   }
 }

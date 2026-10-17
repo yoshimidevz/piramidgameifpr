@@ -104,16 +104,28 @@ class StudentDetailScreen extends StatelessWidget {
                         side: BorderSide(color: Theme.of(context).dividerColor),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      onPressed: () => context.go('/aluno/${student.id}/avaliar'),
-                      icon: const Icon(Icons.star_rounded),
-                      style: IconButton.styleFrom(
-                        backgroundColor: AppColors.gold.withOpacity(.15),
-                        side: BorderSide(color: AppColors.gold.withOpacity(.4)),
-                        foregroundColor: AppColors.gold,
-                      ),
-                    ),
+                                        const SizedBox(width: 8),
+                    Builder(builder: (context) {
+                      final uid = InjectionContainer.instance.authViewModel.currentUser.value?.uid;
+                      final isAutoAvaliacao = uid != null && student.isCriadoPor(uid);
+                      return IconButton(
+                        onPressed: isAutoAvaliacao
+                            ? null
+                            : () => context.go('/aluno/${student.id}/avaliar'),
+                        icon: const Icon(Icons.star_rounded),
+                        style: IconButton.styleFrom(
+                          backgroundColor: isAutoAvaliacao
+                              ? Colors.grey.withOpacity(.1)
+                              : AppColors.gold.withOpacity(.15),
+                          side: BorderSide(
+                            color: isAutoAvaliacao
+                                ? Colors.grey.withOpacity(.3)
+                                : AppColors.gold.withOpacity(.4),
+                          ),
+                          foregroundColor: isAutoAvaliacao ? Colors.grey : AppColors.gold,
+                        ),
+                      );
+                    }),
                   ],
                 ),
                 const SizedBox(height: 8),

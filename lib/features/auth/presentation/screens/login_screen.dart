@@ -19,6 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isRegisterMode = false;
   bool _isLoading = false;
   bool _isGoogleLoading = false;
+  bool _googleEmAndamento = false;
   String? _errorMessage;
 
   @override
@@ -58,7 +59,18 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     result.when(
-      onSuccess: (_) async {
+        onSuccess: (_) async {
+        final uid = InjectionContainer.instance.authViewModel.currentUser.value?.uid;
+        final perfilCompleto = uid != null
+            ? await InjectionContainer.instance.firestoreUsuarioService.perfilCompleto(uid)
+            : false;
+        print('DEBUG LOGIN: uid = $uid');
+        print('DEBUG LOGIN: perfilCompleto = $perfilCompleto');
+        if (!mounted) return;
+        if (!perfilCompleto) {
+          context.go('/completar-perfil');
+          return;
+        }
         await InjectionContainer.instance.rankingViewModel.refresh();
         if (mounted) context.go('/inicio');
       },
@@ -71,29 +83,55 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Future<void> _loginWithGoogle() async {
+    Future<void> _loginWithGoogle() async {
+    if (_googleEmAndamento) return;
+    _googleEmAndamento = true;
+
     setState(() {
       _isGoogleLoading = true;
       _errorMessage = null;
     });
 
-    final viewModel = InjectionContainer.instance.authViewModel;
-    final result = await viewModel.loginWithGoogle();
+    try {
+      final viewModel = InjectionContainer.instance.authViewModel;
+      final result = await viewModel.loginWithGoogle();
 
-    if (!mounted) return;
+      print('DEBUG: resultado = ${result.isFailure ? "FALHOU" : "SUCESSO"}');
 
-    result.when(
-      onSuccess: (_) async {
-        await InjectionContainer.instance.rankingViewModel.refresh();
-        if (mounted) context.go('/inicio');
-      },
-      onFailure: (failure) {
-        setState(() {
-          _isGoogleLoading = false;
-          _errorMessage = failure.message;
-        });
-      },
-    );
+      if (!mounted) return;
+
+      result.when(
+        onSuccess: (_) async {
+          final uid = InjectionContainer.instance.authViewModel.currentUser.value?.uid;
+          final perfilCompleto = uid != null
+              ? await InjectionContainer.instance.firestoreUsuarioService.perfilCompleto(uid)
+              : false;
+          if (!mounted) return;
+          if (!perfilCompleto) {
+            context.go('/completar-perfil');
+            return;
+          }
+          await InjectionContainer.instance.rankingViewModel.refresh();
+          if (mounted) context.go('/inicio');
+        },
+        onFailure: (failure) {
+          print('DEBUG: erro = ${failure.message}');
+          setState(() {
+            _isGoogleLoading = false;
+            _errorMessage = failure.message;
+          });
+        },
+      );
+    } catch (e, stack) {
+      print('DEBUG: excecao = $e');
+      print('DEBUG: stack = $stack');
+      setState(() {
+        _isGoogleLoading = false;
+        _errorMessage = 'Erro inesperado: $e';
+      });
+    } finally {
+      _googleEmAndamento = false;
+    }
   }
 
   @override

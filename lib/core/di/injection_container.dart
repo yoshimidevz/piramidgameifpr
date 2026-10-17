@@ -25,6 +25,7 @@
   import '../../features/auth/data/repositories/auth_repository_impl.dart';
   import '../../features/auth/facade/auth_facade.dart';
   import '../../features/auth/presentation/viewmodels/auth_viewmodel.dart';
+  import '../../features/auth/data/services/firestore_usuario_service.dart';
   import '../../features/avaliacao/data/services/firestore_avaliacao_service.dart';
   import '../../features/avaliacao/data/repositories/avaliacao_repository_impl.dart';
   import '../../features/avaliacao/domain/usecases/salvar_avaliacao_usecase.dart';
@@ -58,6 +59,7 @@
     late final AvaliacaoFacade avaliacaoFacade;
     late final AvaliacaoViewModel avaliacaoViewModel;
     late final RankingPessoalViewModel rankingPessoalViewModel;
+    late final FirestoreUsuarioService firestoreUsuarioService;
 
     bool _initialized = false;
 
@@ -67,6 +69,7 @@
       await SharedPreferences.getInstance();
 
       _storageHelper = LocalStorageHelper();
+      firestoreUsuarioService = FirestoreUsuarioService();
 
       // Student — Firestore
       final firestoreStudentService = FirestoreStudentService();

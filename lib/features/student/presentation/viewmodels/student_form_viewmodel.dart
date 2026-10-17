@@ -79,7 +79,7 @@ class StudentFormViewModel {
     );
   }
 
-  Future<void> save() async {
+    Future<void> save({String? criadoPor}) async {
     if (!isComplete.value) return;
     final student = Student(
       id: editingStudentId ?? '',
@@ -91,8 +91,8 @@ class StudentFormViewModel {
       criteriaScores: {
         for (final entry in criteriaScores.entries) entry.key: entry.value.value,
       },
+      criadoPor: criadoPor,
     );
-
     await saveCommand.execute(student);
   }
 

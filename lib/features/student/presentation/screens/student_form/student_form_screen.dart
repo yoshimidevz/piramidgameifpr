@@ -46,8 +46,8 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
   }
 
   Future<void> _handleSave(BuildContext context) async {
-    await _viewModel.save();
-
+    final uid = InjectionContainer.instance.authViewModel.currentUser.value?.uid;
+    await _viewModel.save(criadoPor: uid);
     if (!context.mounted) return;
 
     final state = _viewModel.saveCommand.state.value;

@@ -29,16 +29,17 @@ class AuthService {
       return Result.failure(Failure(_friendlyError(e.code)));
     }
   }
-
-    Future<Result<User>> loginWithGoogle() async {
+  
+  Future<Result<User>> loginWithGoogle() async {
     try {
       final provider = GoogleAuthProvider();
+      provider.setCustomParameters({'prompt': 'select_account'});
       final result = await _auth.signInWithPopup(provider);
       return Result.success(result.user!);
     } on FirebaseAuthException catch (e) {
       return Result.failure(Failure(_friendlyError(e.code)));
     } catch (e) {
-      return Result.failure(Failure('Erro ao entrar com Google'));
+      return Result.failure(Failure('Erro ao entrar com Google: $e'));
     }
   }
 
