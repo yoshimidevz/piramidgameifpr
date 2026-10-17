@@ -34,6 +34,7 @@ class _CompletarPerfilScreenState extends State<CompletarPerfilScreen> {
     if (user != null && user.name.isNotEmpty) {
       _nomeController.text = user.name;
     }
+    _nomeController.addListener(() => setState(() {}));
   }
 
   @override
@@ -308,7 +309,43 @@ class _CompletarPerfilScreenState extends State<CompletarPerfilScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-
+              Builder(builder: (context) {
+                final nome = _nomeController.text.trim();
+                final arroba = nome.isNotEmpty
+                    ? gerarArroba(nome, _curso.label, _turma)
+                    : '...';
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.green.withOpacity(.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.green.withOpacity(.2)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '@$arroba',
+                        style: AppTextStyles.sora(
+                          fontSize: 15, fontWeight: FontWeight.w800,
+                          color: AppColors.green,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Esse será seu identificador único no ranking. '
+                        'Não é possível personalizá-lo pois segue um padrão automático.',
+                        style: AppTextStyles.jakarta(
+                          fontSize: 11.5, fontWeight: FontWeight.w500,
+                          color: AppColors.green.withOpacity(.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+              const SizedBox(height: 16),
               Text('Curso', style: AppTextStyles.jakarta(fontSize: 13, fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
               Wrap(

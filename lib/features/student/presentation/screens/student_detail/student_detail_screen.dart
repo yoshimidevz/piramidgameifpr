@@ -265,6 +265,14 @@ class _StudentHeader extends StatelessWidget {
                   '"${student.nickname}"',
                   style: AppTextStyles.jakarta(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.green),
                 ),
+                              if (student.arroba != null)
+                Text(
+                  '@${student.arroba}',
+                  style: AppTextStyles.jakarta(
+                    fontSize: 12, fontWeight: FontWeight.w600,
+                    color: AppColors.green.withOpacity(.7),
+                  ),
+                ),
               Text(
                 '${student.course.label} · ${student.classYear} · '
                 '${student.birthDate.day.toString().padLeft(2, '0')}/'
