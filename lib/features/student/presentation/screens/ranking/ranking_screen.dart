@@ -236,6 +236,7 @@ class _PodiumColumn extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final avatarSize = isWinner ? 74.0 : 60.0;
+    final isGhost = !student.contaVinculada;
 
     return GestureDetector(
       onTap: () => context.go('/aluno/${student.id}'),
@@ -247,33 +248,43 @@ class _PodiumColumn extends StatelessWidget {
               padding: EdgeInsets.only(bottom: 4),
               child: Icon(Icons.emoji_events_rounded, color: AppColors.gold, size: 26),
             ),
-          Container(
-            width: avatarSize,
-            height: avatarSize,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: _avatarColor(),
-              border: Border.all(
-                color: isWinner ? AppColors.gold : const Color(0xFFC0C7CC),
-                width: 3,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(.3),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
+          Stack(
+            children: [
+              Container(
+                width: avatarSize,
+                height: avatarSize,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isGhost
+                      ? Colors.grey.withOpacity(.25)
+                      : _avatarColor(),
+                  border: Border.all(
+                    color: isGhost
+                        ? Colors.grey.withOpacity(.4)
+                        : (isWinner ? AppColors.gold : const Color(0xFFC0C7CC)),
+                    width: 3,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(.3),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              _initials(),
-              style: AppTextStyles.sora(
-                fontSize: isWinner ? 23 : 19,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
+                alignment: Alignment.center,
+                child: isGhost
+                    ? Text('👻', style: TextStyle(fontSize: avatarSize * 0.45))
+                    : Text(
+                        _initials(),
+                        style: AppTextStyles.sora(
+                          fontSize: isWinner ? 23 : 19,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
               ),
-            ),
+            ],
           ),
           const SizedBox(height: 8),
           Text(
@@ -281,6 +292,7 @@ class _PodiumColumn extends StatelessWidget {
             style: AppTextStyles.jakarta(
               fontSize: isWinner ? 13.5 : 12.5,
               fontWeight: isWinner ? FontWeight.w800 : FontWeight.w700,
+              color: isGhost ? theme.colorScheme.onSurface.withOpacity(.5) : null,
             ),
             textAlign: TextAlign.center,
             maxLines: 1,
@@ -291,7 +303,7 @@ class _PodiumColumn extends StatelessWidget {
             style: AppTextStyles.jakarta(
               fontSize: isWinner ? 13 : 12,
               fontWeight: FontWeight.w700,
-              color: AppColors.green,
+              color: isGhost ? Colors.grey : AppColors.green,
             ),
           ),
           const SizedBox(height: 8),
@@ -301,7 +313,6 @@ class _PodiumColumn extends StatelessWidget {
             alignment: Alignment.topCenter,
             padding: const EdgeInsets.only(top: 12),
             decoration: BoxDecoration(
-              color: blockColor,
               gradient: blockColor == null
                   ? LinearGradient(
                       begin: Alignment.topCenter,
@@ -337,13 +348,11 @@ class _RankingListItem extends StatelessWidget {
   final Student student;
 
   const _RankingListItem({required this.position, required this.student});
+
   Color _avatarColor() {
     final colors = [
-      AppColors.green,
-      AppColors.greenDeep,
-      const Color(0xFFD6457F),
-      const Color(0xFF8B5CF6),
-      const Color(0xFF3B82F6),
+      AppColors.green, AppColors.greenDeep,
+      const Color(0xFFD6457F), const Color(0xFF8B5CF6), const Color(0xFF3B82F6),
     ];
     return colors[student.name.hashCode % colors.length];
   }
@@ -359,18 +368,21 @@ class _RankingListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final tier = StudentTierInfo.fromScore(student.totalScore);
+    final isGhost = !student.contaVinculada;
 
     return GestureDetector(
-      onTap: () {
-        context.go('/aluno/${student.id}?t=${DateTime.now().millisecondsSinceEpoch}');
-      },
+      onTap: () => context.go('/aluno/${student.id}'),
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: theme.dividerColor),
+          border: Border.all(
+            color: isGhost
+                ? theme.dividerColor.withOpacity(.5)
+                : theme.dividerColor,
+          ),
         ),
         child: Row(
           children: [
@@ -388,15 +400,19 @@ class _RankingListItem extends StatelessWidget {
             const SizedBox(width: 8),
             CircleAvatar(
               radius: 18,
-              backgroundColor: _avatarColor(),
-              child: Text(
-                _initials(),
-                style: AppTextStyles.sora(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                ),
-              ),
+              backgroundColor: isGhost
+                  ? Colors.grey.withOpacity(.25)
+                  : _avatarColor(),
+              child: isGhost
+                  ? const Text('👻', style: TextStyle(fontSize: 16))
+                  : Text(
+                      _initials(),
+                      style: AppTextStyles.sora(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -405,7 +421,13 @@ class _RankingListItem extends StatelessWidget {
                 children: [
                   Text(
                     student.name,
-                    style: AppTextStyles.jakarta(fontSize: 14.5, fontWeight: FontWeight.w700),
+                    style: AppTextStyles.jakarta(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w700,
+                      color: isGhost
+                          ? theme.colorScheme.onSurface.withOpacity(.5)
+                          : null,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
@@ -427,7 +449,7 @@ class _RankingListItem extends StatelessWidget {
                   style: AppTextStyles.sora(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.green,
+                    color: isGhost ? Colors.grey : AppColors.green,
                   ),
                 ),
                 Text(
@@ -436,7 +458,7 @@ class _RankingListItem extends StatelessWidget {
                     fontSize: 9.5,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.4,
-                    color: AppColors.gold,
+                    color: isGhost ? Colors.grey : AppColors.gold,
                   ),
                 ),
               ],

@@ -6,7 +6,8 @@ class Usuario {
   final String curso;
   final int turma;
   final String? pessoaId; // id da pessoa vinculada no ranking
-
+  final String? arroba; // gerado automaticamente no onboarding
+  
   const Usuario({
     required this.uid,
     required this.nome,
@@ -15,5 +16,6 @@ class Usuario {
     required this.curso,
     required this.turma,
     this.pessoaId,
+    this.arroba,
   });
 }

@@ -113,9 +113,15 @@ class _CompletarPerfilScreenState extends State<CompletarPerfilScreen> {
       curso: _perfilExistente!.course.name,
       turma: _perfilExistente!.classYear,
       pessoaId: _perfilExistente!.id,
+      arroba: _perfilExistente!.arroba,
     );
 
     await InjectionContainer.instance.firestoreUsuarioService.salvar(usuario);
+    final pessoaAtualizada = _perfilExistente!.copyWith(
+      contaVinculada: true,
+      criadoPor: uid,
+    );
+    await InjectionContainer.instance.studentFacade.updateStudent(pessoaAtualizada);
 
     if (!mounted) return;
 
@@ -138,6 +144,7 @@ class _CompletarPerfilScreenState extends State<CompletarPerfilScreen> {
       criteriaScores: {for (final c in CriteriaType.values) c: 1.0},
       criadoPor: uid,
       arroba: arroba,
+      contaVinculada: true,
     );
 
     final studentResult =
@@ -161,6 +168,7 @@ class _CompletarPerfilScreenState extends State<CompletarPerfilScreen> {
       curso: _curso.name,
       turma: _turma,
       pessoaId: pessoaId,
+      arroba: arroba,
     );
 
     await InjectionContainer.instance.firestoreUsuarioService.salvar(usuario);

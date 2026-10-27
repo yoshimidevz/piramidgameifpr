@@ -42,8 +42,11 @@ class AvaliacaoViewModel {
     isLoading.value = false;
   }
 
-  Future<Result<void>> salvar(
-      String avaliadorUid, String pessoaId) async {
+  Future<Result<void>> salvar(String avaliadorUid, String pessoaId) async {
+    print('DEBUG VM: salvar chamado uid=$avaliadorUid pessoaId=$pessoaId');
+    print('DEBUG VM: todasAvaliadas=${todasAvaliadas}');
+    print('DEBUG VM: totalAtual=$totalAtual');
+    
     final notasMap = <CriteriaType, double>{};
     for (final entry in notas.entries) {
       notasMap[entry.key] = entry.value.value;

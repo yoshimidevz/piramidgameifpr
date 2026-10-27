@@ -30,6 +30,8 @@ class _AvaliacaoScreenState extends State<AvaliacaoScreen> {
 
   Future<void> _salvar() async {
     final uid = InjectionContainer.instance.authViewModel.currentUser.value?.uid;
+    print('DEBUG SCREEN: _salvar chamado uid=$uid pessoaId=${widget.pessoaId}');
+    print('DEBUG SCREEN: todasAvaliadas=${InjectionContainer.instance.avaliacaoViewModel.todasAvaliadas}');
     if (uid == null) return;
 
     final viewModel = InjectionContainer.instance.avaliacaoViewModel;
@@ -187,7 +189,10 @@ class _AvaliacaoScreenState extends State<AvaliacaoScreen> {
                       child: SizedBox(
                         height: 50,
                         child: ElevatedButton(
-                          onPressed: _salvar,
+                          onPressed: () {
+                            print('DEBUG: botao salvar tocado');
+                            _salvar();
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.green,
                             foregroundColor: Colors.white,

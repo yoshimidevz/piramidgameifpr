@@ -20,6 +20,7 @@ class FirestoreUsuarioService {
         curso: data['curso'] as String,
         turma: data['turma'] as int,
         pessoaId: data['pessoaId'] as String?,
+        arroba: data['arroba'] as String?,
       ));
     } catch (e) {
       return Result.failure(Failure('Erro ao buscar usuário: $e'));
@@ -35,6 +36,7 @@ class FirestoreUsuarioService {
         'curso': usuario.curso,
         'turma': usuario.turma,
         'pessoaId': usuario.pessoaId,
+        'arroba': usuario.arroba,
       });
       return const Result.success(null);
     } catch (e) {

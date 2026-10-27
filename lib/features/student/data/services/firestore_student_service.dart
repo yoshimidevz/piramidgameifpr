@@ -88,6 +88,7 @@ class FirestoreStudentService {
       'dataNascimento': student.birthDate.toIso8601String(),
       'criadoPor': student.criadoPor,
       'arroba': student.arroba,
+      'contaVinculada': student.contaVinculada,
     };
   }
 
@@ -106,6 +107,7 @@ class FirestoreStudentService {
         },
         criadoPor: data['criadoPor'] as String?,
         arroba: data['arroba'] as String?,
+        contaVinculada: data['contaVinculada'] as bool? ?? false,
       );
     } catch (e) {
       return null;

@@ -32,6 +32,7 @@ class Student {
   final Map<CriteriaType, double> criteriaScores;
   final String? criadoPor; // uid do usuario que cadastrou essa pessoa
   final String? arroba;
+  final bool contaVinculada;
 
   const Student({
     required this.id,
@@ -43,6 +44,7 @@ class Student {
     required this.criteriaScores,
     this.criadoPor,
     this.arroba,
+    this.contaVinculada = false,
   });
 
   double get totalScore {
@@ -64,6 +66,7 @@ class Student {
     Map<CriteriaType, double>? criteriaScores,
     String? criadoPor,
     String? arroba,
+    bool? contaVinculada,
   }) {
     return Student(
       id: id ?? this.id,
@@ -75,6 +78,7 @@ class Student {
       criteriaScores: criteriaScores ?? this.criteriaScores,
       criadoPor: criadoPor ?? this.criadoPor,
       arroba: arroba ?? this.arroba,
+      contaVinculada: contaVinculada ?? this.contaVinculada,
     );
   }
 }

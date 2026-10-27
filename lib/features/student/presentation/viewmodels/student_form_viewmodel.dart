@@ -5,6 +5,8 @@ import '../../domain/entities/popularity_criteria.dart';
 import '../../domain/entities/student.dart';
 import '../../facade/student_usecases_facade.dart';
 import '../../../../core/command/command_state.dart';
+import 'package:uuid/uuid.dart';
+import '../../../../core/extensions/string_extensions.dart';
 
 class StudentFormViewModel {
   final StudentUseCasesFacade _facade;
@@ -79,10 +81,14 @@ class StudentFormViewModel {
     );
   }
 
-    Future<void> save({String? criadoPor}) async {
-    if (!isComplete.value) return;
+  Future<String?> save({String? criadoPor}) async {
+    if (!isComplete.value) return null;
+    
+    // Gera o id antes, para poder usar na avaliacao depois
+    final id = editingStudentId ?? const Uuid().v4();
+    
     final student = Student(
-      id: editingStudentId ?? '',
+      id: id,
       name: name.value,
       nickname: nickname.value,
       course: course.value,
@@ -92,8 +98,13 @@ class StudentFormViewModel {
         for (final entry in criteriaScores.entries) entry.key: entry.value.value,
       },
       criadoPor: criadoPor,
+      arroba: editingStudentId == null
+          ? gerarArroba(name.value, course.value.label, classYear.value)
+          : null,
+      contaVinculada: false,
     );
     await saveCommand.execute(student);
+    return id; // retorna o id gerado
   }
 
   Future<Result<void>> _save(Student student) {

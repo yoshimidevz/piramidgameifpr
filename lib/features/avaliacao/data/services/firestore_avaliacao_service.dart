@@ -8,9 +8,10 @@ class FirestoreAvaliacaoService {
 
   CollectionReference get _avaliacoes => _db.collection('avaliacoes');
 
-  Future<Result<void>> salvar(Avaliacao avaliacao) async {
+    Future<Result<void>> salvar(Avaliacao avaliacao) async {
     try {
-      // Busca se ja existe avaliacao desse usuario para essa pessoa
+      print('DEBUG AVAL: salvando avaliacao pessoaId=${avaliacao.pessoaId} uid=${avaliacao.avaliadorUid} total=${avaliacao.pontuacaoTotal}');
+      
       final existing = await _avaliacoes
           .where('avaliadorUid', isEqualTo: avaliacao.avaliadorUid)
           .where('pessoaId', isEqualTo: avaliacao.pessoaId)
@@ -18,17 +19,19 @@ class FirestoreAvaliacaoService {
           .get();
 
       final data = _toMap(avaliacao);
+      print('DEBUG AVAL: data = $data');
 
       if (existing.docs.isNotEmpty) {
-        // Atualiza a avaliacao existente (upsert)
         await existing.docs.first.reference.update(data);
+        print('DEBUG AVAL: atualizado');
       } else {
-        // Cria nova avaliacao
         await _avaliacoes.doc(avaliacao.id).set(data);
+        print('DEBUG AVAL: criado');
       }
 
       return const Result.success(null);
     } catch (e) {
+      print('DEBUG AVAL: ERRO = $e');
       return Result.failure(Failure('Erro ao salvar avaliação: $e'));
     }
   }

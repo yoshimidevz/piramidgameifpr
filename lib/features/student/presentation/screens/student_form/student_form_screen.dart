@@ -8,6 +8,8 @@ import '../../../domain/entities/student.dart';
 import '../../viewmodels/student_form_viewmodel.dart';
 import '../../../domain/entities/student_tier.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../../core/extensions/string_extensions.dart';
+import '../../../../avaliacao/domain/entities/avaliacao.dart';
 
 class StudentFormScreen extends StatefulWidget {
   final String? studentId;
@@ -47,25 +49,99 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
 
   Future<void> _handleSave(BuildContext context) async {
     final uid = InjectionContainer.instance.authViewModel.currentUser.value?.uid;
-    await _viewModel.save(criadoPor: uid);
+
+    if (uid != null && widget.studentId == null) {
+      final arrobaDigitado = gerarArroba(
+        _viewModel.name.value,
+        _viewModel.course.value.label,
+        _viewModel.classYear.value,
+      );
+
+      final existenteResult = await InjectionContainer.instance
+          .studentFacade.buscarPorArroba(arrobaDigitado);
+
+      final existente = existenteResult.when(
+        onSuccess: (s) => s,
+        onFailure: (_) => null,
+      );
+
+      if (existente != null) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${existente.name} (${existente.course.label} ${existente.classYear}) '
+              'já está no ranking!',
+            ),
+            backgroundColor: AppColors.gold,
+          ),
+        );
+        return;
+      }
+
+      final usuarioResult = await InjectionContainer.instance
+          .firestoreUsuarioService.buscarPorUid(uid);
+
+      final meuArroba = usuarioResult.when(
+        onSuccess: (u) => u?.arroba,
+        onFailure: (_) => null,
+      );
+
+      if (meuArroba != null && arrobaDigitado == meuArroba) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Esse perfil é você! Você já está no ranking.'),
+            backgroundColor: AppColors.gold,
+          ),
+        );
+        return;
+      }
+    }
+
+    final pessoaId = await _viewModel.save(criadoPor: uid);
     if (!context.mounted) return;
 
     final state = _viewModel.saveCommand.state.value;
 
-    if (state.isSuccess) {
-      await InjectionContainer.instance.rankingViewModel.refresh();
+        if (state.isSuccess) {
+      // Busca o id real da pessoa que acabou de ser criada pelo arroba
+      if (uid != null && widget.studentId == null) {
+        final arrobaGerado = gerarArroba(
+          _viewModel.name.value,
+          _viewModel.course.value.label,
+          _viewModel.classYear.value,
+        );
+        final pessoaResult = await InjectionContainer.instance
+            .studentFacade.buscarPorArroba(arrobaGerado);
 
-      context.go('/ranking');
-    } else if (state.isError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${state.error}'),
-          backgroundColor: AppColors.red,
-        ),
-      );
+        final pessoaReal = pessoaResult.when(
+          onSuccess: (s) => s,
+          onFailure: (_) => null,
+        );
+
+        if (pessoaReal != null) {
+          final notasMap = <CriteriaType, double>{};
+          for (final entry in _viewModel.criteriaScores.entries) {
+            notasMap[entry.key] = entry.value.value;
+          }
+          final total = notasMap.values.fold(0.0, (sum, v) => sum + v);
+          final avaliacao = Avaliacao(
+            id: '${uid}_${pessoaReal.id}',
+            avaliadorUid: uid,
+            pessoaId: pessoaReal.id,
+            notas: notasMap,
+            pontuacaoTotal: total,
+            dataAvaliacao: DateTime.now(),
+          );
+          await InjectionContainer.instance.avaliacaoFacade.salvar(avaliacao);
+        }
+      }
+
+      await InjectionContainer.instance.rankingViewModel.refresh();
+      if (context.mounted) context.go('/ranking');
     }
   }
-
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.studentId != null;

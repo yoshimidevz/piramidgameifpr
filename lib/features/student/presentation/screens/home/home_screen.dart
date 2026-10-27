@@ -5,6 +5,7 @@ import '../../../../../core/di/injection_container.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_text_styles.dart';
 import '../../../domain/entities/student.dart';
+import '../../../domain/entities/student_tier.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -204,7 +205,7 @@ class _LeaderCard extends StatelessWidget {
               Text(
                 leader == null
                     ? 'Cadastre o primeiro aluno'
-                    : '${leader!.totalScore.toInt()} pontos · Nível Lenda',
+                    : '${leader!.totalScore.toInt()} pontos · Nível ${leader!.tier.label}',
                 style: AppTextStyles.jakarta(
                   fontSize: 13, fontWeight: FontWeight.w600,
                   color: Colors.white.withOpacity(.9),
