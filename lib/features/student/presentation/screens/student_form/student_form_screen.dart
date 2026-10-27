@@ -67,13 +67,28 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
 
       if (existente != null) {
         if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+        showDialog(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Pessoa já no ranking!'),
             content: Text(
               '${existente.name} (${existente.course.label} ${existente.classYear}) '
-              'já está no ranking!',
+              'já está no ranking. Quer ver o perfil dela?',
             ),
-            backgroundColor: AppColors.gold,
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  context.go('/ranking/aluno/${existente.id}');
+                },
+                style: TextButton.styleFrom(foregroundColor: AppColors.green),
+                child: const Text('Ver perfil'),
+              ),
+            ],
           ),
         );
         return;
@@ -99,7 +114,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
       }
     }
 
-    final pessoaId = await _viewModel.save(criadoPor: uid);
+    await _viewModel.save(criadoPor: uid);
     if (!context.mounted) return;
 
     final state = _viewModel.saveCommand.state.value;

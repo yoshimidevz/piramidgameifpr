@@ -111,7 +111,7 @@ class StudentDetailScreen extends StatelessWidget {
                       return IconButton(
                         onPressed: isAutoAvaliacao
                             ? null
-                            : () => context.go('/aluno/${student.id}/avaliar'),
+                            : () => context.go('/ranking/aluno/${student.id}/avaliar'),
                         icon: const Icon(Icons.star_rounded),
                         style: IconButton.styleFrom(
                           backgroundColor: isAutoAvaliacao
@@ -336,23 +336,51 @@ class _ScoreCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(.18),
-              borderRadius: BorderRadius.circular(99),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.military_tech_rounded, size: 16, color: AppColors.gold),
-                const SizedBox(width: 6),
-                Text(
-                  'Nível ${tier.label}',
-                  style: AppTextStyles.jakarta(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(.18),
+                  borderRadius: BorderRadius.circular(99),
                 ),
-              ],
-            ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.military_tech_rounded, size: 16, color: AppColors.gold),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Nível ${tier.label}',
+                      style: AppTextStyles.jakarta(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Watch((context) {
+                final total = InjectionContainer.instance.studentDetailViewModel.totalAvaliacoes.value;
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(.18),
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.people_rounded, size: 16, color: Colors.white),
+                      const SizedBox(width: 6),
+                      Text(
+                        total == 1 ? '1 avaliação' : '$total avaliações',
+                        style: AppTextStyles.jakarta(
+                          fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ],
           ),
         ],
       ),

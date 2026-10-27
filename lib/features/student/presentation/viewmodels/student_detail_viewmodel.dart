@@ -15,25 +15,32 @@ class StudentDetailViewModel {
 
   final student = signal<Student?>(null);
   final isLoading = signal<bool>(false);
+  final totalAvaliacoes = signal<int>(0);
 
   late final Command1<void, String> deleteCommand;
 
-  Future<void> loadStudent(String studentId, {String? avaliadorUid}) async {
+    Future<void> loadStudent(String studentId, {String? avaliadorUid}) async {
     isLoading.value = true;
 
     final result = await _facade.getStudentById(studentId);
 
     await result.when(
       onSuccess: (loadedStudent) async {
+        // Busca o total de avaliacoes dessa pessoa (de todos os usuarios)
+        final todasResult = await _avaliacaoFacade.buscarPorPessoa(studentId);
+        todasResult.when(
+          onSuccess: (lista) => totalAvaliacoes.value = lista.length,
+          onFailure: (_) => totalAvaliacoes.value = 0,
+        );
+
         // Se tiver uid do usuario logado, busca as notas da avaliacao dele
         if (avaliadorUid != null) {
-          final avaliacaoResult = await _avaliacaoFacade.buscar(
-              avaliadorUid, studentId);
+          final avaliacaoResult =
+              await _avaliacaoFacade.buscar(avaliadorUid, studentId);
 
           avaliacaoResult.when(
             onSuccess: (avaliacao) {
               if (avaliacao != null) {
-                // Substitui os criteriaScores pelas notas reais da avaliacao
                 student.value = Student(
                   id: loadedStudent.id,
                   name: loadedStudent.name,
@@ -42,9 +49,11 @@ class StudentDetailViewModel {
                   classYear: loadedStudent.classYear,
                   birthDate: loadedStudent.birthDate,
                   criteriaScores: avaliacao.notas,
+                  criadoPor: loadedStudent.criadoPor,
+                  arroba: loadedStudent.arroba,
+                  contaVinculada: loadedStudent.contaVinculada,
                 );
               } else {
-                // Pessoa ainda nao avaliada pelo usuario
                 student.value = loadedStudent;
               }
             },
@@ -58,6 +67,7 @@ class StudentDetailViewModel {
       },
       onFailure: (failure) async {
         student.value = null;
+        totalAvaliacoes.value = 0;
       },
     );
 
@@ -71,5 +81,6 @@ class StudentDetailViewModel {
   void dispose() {
     student.dispose();
     isLoading.dispose();
+    totalAvaliacoes.dispose();
   }
 }

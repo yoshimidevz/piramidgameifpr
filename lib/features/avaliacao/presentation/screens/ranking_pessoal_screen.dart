@@ -153,7 +153,7 @@ class _RankingPessoalItem extends StatelessWidget {
     final tier = StudentTierInfo.fromScore(student.totalScore);
 
     return GestureDetector(
-      onTap: () => context.go('/aluno/${student.id}'),
+      onTap: () => context.go('/ranking/aluno/${student.id}'),
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(14),

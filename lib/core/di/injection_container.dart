@@ -36,6 +36,7 @@
   import '../../features/avaliacao/presentation/viewmodels/avaliacao_viewmodel.dart';
   import '../../features/avaliacao/presentation/viewmodels/ranking_pessoal_viewmodel.dart';
   import '../../features/student/domain/usecases/buscar_por_arroba_usecase.dart';
+  import '../../features/avaliacao/domain/usecases/buscar_avaliacoes_por_pessoa_usecase.dart';
 
   class InjectionContainer {
     InjectionContainer._();
@@ -92,6 +93,7 @@
       avaliacaoFacade = AvaliacaoFacade(
         salvar: SalvarAvaliacaoUseCase(avaliacaoRepository),
         buscar: BuscarAvaliacaoUseCase(avaliacaoRepository),
+        buscarPorPessoa: BuscarAvaliacoesPorPessoaUseCase(avaliacaoRepository),
         rankingPessoal: CalcularRankingPessoalUseCase(
             avaliacaoRepository, _studentRepository),
         rankingGlobal: CalcularRankingGlobalUseCase(

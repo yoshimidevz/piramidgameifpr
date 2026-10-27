@@ -239,7 +239,7 @@ class _PodiumColumn extends StatelessWidget {
     final isGhost = !student.contaVinculada;
 
     return GestureDetector(
-      onTap: () => context.go('/aluno/${student.id}'),
+      onTap: () => context.go('/ranking/aluno/${student.id}'),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -371,8 +371,7 @@ class _RankingListItem extends StatelessWidget {
     final isGhost = !student.contaVinculada;
 
     return GestureDetector(
-      onTap: () => context.go('/aluno/${student.id}'),
-      child: Container(
+        onTap: () => context.go('/ranking/aluno/${student.id}'),      child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
