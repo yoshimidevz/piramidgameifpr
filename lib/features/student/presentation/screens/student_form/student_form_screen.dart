@@ -67,7 +67,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
         onFailure: (_) => null,
       );
 
-            if (existente != null) {
+      if (existente != null) {
         if (!context.mounted) return;
         showDialog(
           context: context,
@@ -162,7 +162,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
       if (context.mounted) context.go('/ranking');
     }
   }
-  
+
   bool _jaVerificou = false;
 
   Future<void> _verificarDuplicata(BuildContext context) async {
@@ -329,7 +329,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
                       maxYear: maxClassYear,
                     ),
 
-                    const _SectionLabel(text: 'Data de nascimento'),
+                    const _SectionLabel(text: 'Data de nascimento (opcional)'),
                     const SizedBox(height: 10),
                     _BirthDateField(
                       signal: _viewModel.birthDate,
@@ -588,13 +588,13 @@ class _BirthDateField extends StatelessWidget {
                   size: 18, color: theme.colorScheme.primary),
               const SizedBox(width: 10),
               Text(
-                date == null ? 'Selecionar data' : _format(date),
+                date == null ? 'Não sei / prefiro não informar' : _format(date),
                 style: AppTextStyles.jakarta(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: date == null
-                      ? theme.colorScheme.onSurface.withOpacity(.5)
-                      : theme.colorScheme.onSurface,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: date == null
+                    ? theme.colorScheme.onSurface.withOpacity(.5)
+                    : theme.colorScheme.onSurface,
                 ),
               ),
             ],
