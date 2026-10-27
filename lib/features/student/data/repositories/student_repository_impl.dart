@@ -92,4 +92,10 @@ class StudentRepositoryImpl implements StudentRepository {
   Future<Result<Student?>> buscarPorArroba(String arroba) async {
     return const Result.success(null); // nao implementado no legado
   }
+
+  @override
+  Future<Result<Student?>> buscarPorPrimeiroNome(
+      String primeiroNome, String curso, int turma) async {
+    return const Result.success(null);
+  }
 }

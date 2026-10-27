@@ -113,4 +113,33 @@ class FirestoreStudentService {
       return null;
     }
   }
+
+  Future<Result<Student?>> buscarPorPrimeiroNome(
+    String primeiroNome,
+    String curso,
+    int turma,
+  ) async {
+    try {
+      final snapshot = await _pessoas
+          .where('curso', isEqualTo: curso)
+          .where('turma', isEqualTo: turma)
+          .get();
+
+      final alvo = primeiroNome.trim().toLowerCase();
+
+      for (final doc in snapshot.docs) {
+        final student = _fromDoc(doc);
+        if (student == null) continue;
+        final partes = student.name.trim().split(' ');
+        if (partes.isEmpty) continue;
+        if (partes.first.toLowerCase() == alvo) {
+          return Result.success(student);
+        }
+      }
+
+      return const Result.success(null);
+    } catch (e) {
+      return Result.failure(Failure('Erro ao buscar pessoa: $e'));
+    }
+  }
 }

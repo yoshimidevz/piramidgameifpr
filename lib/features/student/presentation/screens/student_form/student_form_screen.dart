@@ -57,28 +57,33 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
         _viewModel.classYear.value,
       );
 
-      final existenteResult = await InjectionContainer.instance
-          .studentFacade.buscarPorArroba(arrobaDigitado);
+      final primeiroNome = _viewModel.name.value.trim().split(' ').first;
+      final existenteResult = await InjectionContainer.instance.studentFacade
+          .buscarPorPrimeiroNome(
+              primeiroNome, _viewModel.course.value.name, _viewModel.classYear.value);
 
       final existente = existenteResult.when(
         onSuccess: (s) => s,
         onFailure: (_) => null,
       );
 
-      if (existente != null) {
+            if (existente != null) {
         if (!context.mounted) return;
         showDialog(
           context: context,
           builder: (dialogContext) => AlertDialog(
-            title: const Text('Pessoa já no ranking!'),
+            title: const Text('Essa pessoa já está no ranking?'),
             content: Text(
-              '${existente.name} (${existente.course.label} ${existente.classYear}) '
-              'já está no ranking. Quer ver o perfil dela?',
+              'Encontramos ${existente.name} (${existente.course.label} ${existente.classYear}) '
+              'no ranking. É a mesma pessoa que você quer cadastrar?',
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text('Cancelar'),
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  _salvarMesmoAssim(context);
+                },
+                child: const Text('Não, é outra pessoa'),
               ),
               TextButton(
                 onPressed: () {
@@ -86,7 +91,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
                   context.go('/ranking/aluno/${existente.id}');
                 },
                 style: TextButton.styleFrom(foregroundColor: AppColors.green),
-                child: const Text('Ver perfil'),
+                child: const Text('Sim, é ela'),
               ),
             ],
           ),
@@ -157,6 +162,106 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
       if (context.mounted) context.go('/ranking');
     }
   }
+  
+  bool _jaVerificou = false;
+
+  Future<void> _verificarDuplicata(BuildContext context) async {
+    // Só verifica em cadastro novo, com nome preenchido, e uma vez só
+    if (widget.studentId != null) return;
+    if (_viewModel.name.value.trim().isEmpty) return;
+    if (_jaVerificou) return;
+
+    final primeiroNome = _viewModel.name.value.trim().split(' ').first;
+    final result = await InjectionContainer.instance.studentFacade
+        .buscarPorPrimeiroNome(
+            primeiroNome, _viewModel.course.value.name, _viewModel.classYear.value);
+
+    final existente = result.when(
+      onSuccess: (s) => s,
+      onFailure: (_) => null,
+    );
+
+    if (existente == null || !context.mounted) return;
+
+    _jaVerificou = true;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Essa pessoa já está no ranking?'),
+        content: Text(
+          'Encontramos ${existente.name} (${existente.course.label} ${existente.classYear}) '
+          'no ranking. É a mesma pessoa que você quer cadastrar?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Não, é outra pessoa'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              context.go('/ranking/aluno/${existente.id}');
+            },
+            style: TextButton.styleFrom(foregroundColor: AppColors.green),
+            child: const Text('Sim, é ela'),
+          ),
+        ],
+      ),
+    );
+  }
+  Future<void> _salvarMesmoAssim(BuildContext context) async {
+    final uid = InjectionContainer.instance.authViewModel.currentUser.value?.uid;
+
+    await _viewModel.save(criadoPor: uid);
+    if (!context.mounted) return;
+
+    final state = _viewModel.saveCommand.state.value;
+
+    if (state.isSuccess) {
+      if (uid != null && widget.studentId == null) {
+        final arrobaGerado = gerarArroba(
+          _viewModel.name.value,
+          _viewModel.course.value.label,
+          _viewModel.classYear.value,
+        );
+        final pessoaResult = await InjectionContainer.instance
+            .studentFacade.buscarPorArroba(arrobaGerado);
+
+        final pessoaReal = pessoaResult.when(
+          onSuccess: (s) => s,
+          onFailure: (_) => null,
+        );
+
+        if (pessoaReal != null) {
+          final notasMap = <CriteriaType, double>{};
+          for (final entry in _viewModel.criteriaScores.entries) {
+            notasMap[entry.key] = entry.value.value;
+          }
+          final total = notasMap.values.fold(0.0, (sum, v) => sum + v);
+          final avaliacao = Avaliacao(
+            id: '${uid}_${pessoaReal.id}',
+            avaliadorUid: uid,
+            pessoaId: pessoaReal.id,
+            notas: notasMap,
+            pontuacaoTotal: total,
+            dataAvaliacao: DateTime.now(),
+          );
+          await InjectionContainer.instance.avaliacaoFacade.salvar(avaliacao);
+        }
+      }
+
+      await InjectionContainer.instance.rankingViewModel.refresh();
+      if (context.mounted) context.go('/ranking');
+    } else if (state.isError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${state.error}'),
+          backgroundColor: AppColors.red,
+        ),
+      );
+    }
+  }
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.studentId != null;
@@ -204,6 +309,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
                     _FormTextField(
                       signal: _viewModel.name,
                       placeholder: 'Nome completo',
+                      onEditingComplete: () => _verificarDuplicata(context),
                     ),
                     const SizedBox(height: 11),
                     _FormTextField(
@@ -300,28 +406,40 @@ class _SectionLabel extends StatelessWidget {
 class _FormTextField extends StatelessWidget {
   final Signal<String> signal;
   final String placeholder;
+  final VoidCallback? onEditingComplete;
 
-  const _FormTextField({required this.signal, required this.placeholder});
+  const _FormTextField({
+    required this.signal,
+    required this.placeholder,
+    this.onEditingComplete,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Watch((context) {
-      return TextFormField(
-        initialValue: signal.value,
-        onChanged: (value) => signal.value = value,
-        decoration: InputDecoration(
-          hintText: placeholder,
-          filled: true,
-          fillColor: Theme.of(context).colorScheme.surface,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15),
-            borderSide:
-                BorderSide(color: Theme.of(context).dividerColor, width: 1.5),
+      return Focus(
+        onFocusChange: (hasFocus) {
+          if (!hasFocus && onEditingComplete != null) {
+            onEditingComplete!();
+          }
+        },
+        child: TextFormField(
+          initialValue: signal.value,
+          onChanged: (value) => signal.value = value,
+          decoration: InputDecoration(
+            hintText: placeholder,
+            filled: true,
+            fillColor: Theme.of(context).colorScheme.surface,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(15),
+              borderSide:
+                  BorderSide(color: Theme.of(context).dividerColor, width: 1.5),
+            ),
           ),
+          style: AppTextStyles.jakarta(fontSize: 15, fontWeight: FontWeight.w600),
         ),
-        style: AppTextStyles.jakarta(fontSize: 15, fontWeight: FontWeight.w600),
       );
     });
   }

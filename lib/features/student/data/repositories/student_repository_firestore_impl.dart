@@ -25,5 +25,10 @@ class StudentRepositoryFirestoreImpl implements StudentRepository {
 
   @override
   Future<Result<Student?>> buscarPorArroba(String arroba) => _service.buscarPorArroba(arroba);
+
+  @override
+  Future<Result<Student?>> buscarPorPrimeiroNome(
+          String primeiroNome, String curso, int turma) =>
+      _service.buscarPorPrimeiroNome(primeiroNome, curso, turma);  
   
 }

@@ -69,8 +69,9 @@ class _CompletarPerfilScreenState extends State<CompletarPerfilScreen> {
     // Gera o @ automaticamente
     final arroba = gerarArroba(nome, _curso.label, _turma);
 
-    // Verifica se ja existe um perfil com esse @
-    final existenteResult = await InjectionContainer.instance.studentFacade.buscarPorArroba(arroba);
+    final primeiroNome = nome.trim().split(' ').first;
+    final existenteResult = await InjectionContainer.instance.studentFacade
+        .buscarPorPrimeiroNome(primeiroNome, _curso.name, _turma);
 
     if (!mounted) return;
 

@@ -131,4 +131,10 @@ class StudentRepositoryHttpImpl implements StudentRepository {
   Future<Result<Student?>> buscarPorArroba(String arroba) async {
     return const Result.success(null);
   }
+
+  @override
+  Future<Result<Student?>> buscarPorPrimeiroNome(
+      String primeiroNome, String curso, int turma) async {
+    return const Result.success(null);
+  }
 }

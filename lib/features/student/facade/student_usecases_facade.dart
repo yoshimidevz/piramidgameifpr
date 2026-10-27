@@ -7,6 +7,7 @@ import '../domain/usecases/get_all_students_usecase.dart';
 import '../domain/usecases/get_student_by_id_usecase.dart';
 import '../domain/usecases/calculate_ranking_usecase.dart';
 import '../domain/usecases/buscar_por_arroba_usecase.dart';
+import '../domain/usecases/buscar_por_primeiro_nome_usecase.dart';
 
 class StudentUseCasesFacade {
   final CreateStudentUseCase _createStudent;
@@ -16,6 +17,7 @@ class StudentUseCasesFacade {
   final GetStudentByIdUseCase _getStudentById;
   final CalculateRankingUseCase _calculateRanking;
   final BuscarPorArrobaUseCase _buscarPorArroba;
+  final BuscarPorPrimeiroNomeUseCase _buscarPorPrimeiroNome;
 
   StudentUseCasesFacade({
     required CreateStudentUseCase createStudent,
@@ -25,13 +27,15 @@ class StudentUseCasesFacade {
     required GetStudentByIdUseCase getStudentById,
     required CalculateRankingUseCase calculateRanking,
     required BuscarPorArrobaUseCase buscarPorArroba,
+    required BuscarPorPrimeiroNomeUseCase buscarPorPrimeiroNome,
   })  : _createStudent = createStudent,
         _updateStudent = updateStudent,
         _deleteStudent = deleteStudent,
         _getAllStudents = getAllStudents,
         _getStudentById = getStudentById,
         _calculateRanking = calculateRanking,
-        _buscarPorArroba = buscarPorArroba;
+        _buscarPorArroba = buscarPorArroba,
+        _buscarPorPrimeiroNome = buscarPorPrimeiroNome;
 
   Future<Result<void>> createStudent(Student student) {
     return _createStudent(student);
@@ -56,8 +60,13 @@ class StudentUseCasesFacade {
   Future<Result<List<Student>>> calculateRanking() {
     return _calculateRanking();
   }
-  
+
   Future<Result<Student?>> buscarPorArroba(String arroba) {
     return _buscarPorArroba(arroba);
+  }
+
+  Future<Result<Student?>> buscarPorPrimeiroNome(
+      String primeiroNome, String curso, int turma) {
+    return _buscarPorPrimeiroNome(primeiroNome, curso, turma);
   }
 }

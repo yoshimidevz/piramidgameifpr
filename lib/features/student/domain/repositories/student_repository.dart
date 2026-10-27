@@ -10,4 +10,6 @@ abstract class StudentRepository {
   Future<Result<void>> update(Student student);
   Future<Result<void>> delete(String id);
   Future<Result<Student?>> buscarPorArroba(String arroba);
+  Future<Result<Student?>> buscarPorPrimeiroNome(
+    String primeiroNome, String curso, int turma);
 }
