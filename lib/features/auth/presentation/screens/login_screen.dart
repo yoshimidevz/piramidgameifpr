@@ -64,8 +64,6 @@ class _LoginScreenState extends State<LoginScreen> {
         final perfilCompleto = uid != null
             ? await InjectionContainer.instance.firestoreUsuarioService.perfilCompleto(uid)
             : false;
-        print('DEBUG LOGIN: uid = $uid');
-        print('DEBUG LOGIN: perfilCompleto = $perfilCompleto');
         if (!mounted) return;
         if (!perfilCompleto) {
           context.go('/completar-perfil');
@@ -95,9 +93,6 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final viewModel = InjectionContainer.instance.authViewModel;
       final result = await viewModel.loginWithGoogle();
-
-      print('DEBUG: resultado = ${result.isFailure ? "FALHOU" : "SUCESSO"}');
-
       if (!mounted) return;
 
       result.when(
@@ -115,7 +110,6 @@ class _LoginScreenState extends State<LoginScreen> {
           if (mounted) context.go('/inicio');
         },
         onFailure: (failure) {
-          print('DEBUG: erro = ${failure.message}');
           setState(() {
             _isGoogleLoading = false;
             _errorMessage = failure.message;
@@ -123,8 +117,6 @@ class _LoginScreenState extends State<LoginScreen> {
         },
       );
     } catch (e, stack) {
-      print('DEBUG: excecao = $e');
-      print('DEBUG: stack = $stack');
       setState(() {
         _isGoogleLoading = false;
         _errorMessage = 'Erro inesperado: $e';

@@ -31,8 +31,6 @@ class _SplashScreenState extends State<SplashScreen> {
       final perfilCompleto = uid != null
           ? await InjectionContainer.instance.firestoreUsuarioService.perfilCompleto(uid)
           : false;
-      print('DEBUG: uid = $uid');
-      print('DEBUG: perfilCompleto = $perfilCompleto');
 
       if (!mounted) return;
 
