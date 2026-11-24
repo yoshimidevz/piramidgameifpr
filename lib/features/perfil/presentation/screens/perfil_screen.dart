@@ -6,6 +6,7 @@ import '../../../../../core/theme/app_text_styles.dart';
 import '../../../auth/domain/entities/usuario.dart';
 import '../../../student/domain/entities/student.dart';
 import '../../../student/domain/entities/student_tier.dart';
+import 'package:image_picker/image_picker.dart';
 
 class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});
@@ -23,6 +24,68 @@ class _PerfilScreenState extends State<PerfilScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _carregar());
+  }
+  bool _enviandoFoto = false;
+
+  Future<void> _trocarFoto() async {
+    final uid = InjectionContainer.instance.authViewModel.currentUser.value?.uid;
+    if (uid == null) return;
+
+    final picker = ImagePicker();
+    final arquivo = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 85,
+    );
+
+    if (arquivo == null) return;
+
+    setState(() => _enviandoFoto = true);
+
+    final bytes = await arquivo.readAsBytes();
+    final result = await InjectionContainer.instance.fotoFacade.upload(uid, bytes);
+
+    if (!mounted) return;
+
+    await result.when(
+      onSuccess: (url) async {
+        // Atualiza a URL no documento do usuario e da pessoa
+        final usuarioAtualizado = Usuario(
+          uid: _usuario!.uid,
+          nome: _usuario!.nome,
+          email: _usuario!.email,
+          fotoUrl: url,
+          curso: _usuario!.curso,
+          turma: _usuario!.turma,
+          pessoaId: _usuario!.pessoaId,
+          arroba: _usuario!.arroba,
+        );
+        await InjectionContainer.instance.firestoreUsuarioService
+            .salvar(usuarioAtualizado);
+
+        if (_pessoaNoRanking != null) {
+          await InjectionContainer.instance.studentFacade
+              .updateStudent(_pessoaNoRanking!.copyWith(fotoUrl: url));
+        }
+
+        if (mounted) {
+          setState(() => _enviandoFoto = false);
+          _carregar();
+        }
+      },
+      onFailure: (failure) async {
+        if (mounted) {
+          setState(() => _enviandoFoto = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(failure.message),
+              backgroundColor: AppColors.red,
+            ),
+          );
+        }
+      },
+    );
   }
 
   Future<void> _carregar() async {
@@ -109,17 +172,31 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       // Avatar + info principal
                       Row(
                         children: [
-                          ClipOval(
-                            child: SizedBox(
-                              width: 72,
-                              height: 72,
-                              child: _usuario?.fotoUrl != null
-                                  ? Image.network(
-                                      _usuario!.fotoUrl!,
-                                      fit: BoxFit.cover,
-                                      webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
-                                      errorBuilder: (context, error, stack) {
-                                        return Container(
+                          Stack(
+                            children: [
+                              ClipOval(
+                                child: SizedBox(
+                                  width: 72,
+                                  height: 72,
+                                  child: _usuario?.fotoUrl != null
+                                      ? Image.network(
+                                          _usuario!.fotoUrl!,
+                                          fit: BoxFit.cover,
+                                          webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
+                                          errorBuilder: (context, error, stack) {
+                                            return Container(
+                                              color: _avatarColor(_usuario?.nome ?? authUser?.name ?? '?'),
+                                              alignment: Alignment.center,
+                                              child: Text(
+                                                _initials(_usuario?.nome ?? authUser?.name ?? '?'),
+                                                style: AppTextStyles.sora(
+                                                  fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        )
+                                      : Container(
                                           color: _avatarColor(_usuario?.nome ?? authUser?.name ?? '?'),
                                           alignment: Alignment.center,
                                           child: Text(
@@ -128,20 +205,42 @@ class _PerfilScreenState extends State<PerfilScreen> {
                                               fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white,
                                             ),
                                           ),
-                                        );
-                                      },
-                                    )
-                                  : Container(
-                                      color: _avatarColor(_usuario?.nome ?? authUser?.name ?? '?'),
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        _initials(_usuario?.nome ?? authUser?.name ?? '?'),
-                                        style: AppTextStyles.sora(
-                                          fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white,
                                         ),
+                                ),
+                              ),
+                              Positioned(
+                                right: 0,
+                                bottom: 0,
+                                child: GestureDetector(
+                                  onTap: _enviandoFoto ? null : _trocarFoto,
+                                  child: Container(
+                                    width: 26,
+                                    height: 26,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.green,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: theme.scaffoldBackgroundColor,
+                                        width: 2,
                                       ),
                                     ),
-                            ),
+                                    child: _enviandoFoto
+                                        ? const Padding(
+                                            padding: EdgeInsets.all(5),
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        : const Icon(
+                                            Icons.camera_alt_rounded,
+                                            size: 14,
+                                            color: Colors.white,
+                                          ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(width: 16),
                           Expanded(

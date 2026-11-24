@@ -38,6 +38,11 @@
   import '../../features/student/domain/usecases/buscar_por_arroba_usecase.dart';
   import '../../features/avaliacao/domain/usecases/buscar_avaliacoes_por_pessoa_usecase.dart';
   import '../../features/student/domain/usecases/buscar_por_primeiro_nome_usecase.dart';
+  import '../../features/perfil/data/services/photo_storage_service.dart';
+  import '../../features/perfil/data/repositories/foto_repository_impl.dart';
+  import '../../features/perfil/domain/usecases/upload_foto_usecase.dart';
+  import '../../features/perfil/domain/usecases/remover_foto_usecase.dart';
+  import '../../features/perfil/facade/foto_facade.dart';
 
   class InjectionContainer {
     InjectionContainer._();
@@ -63,7 +68,7 @@
     late final AvaliacaoViewModel avaliacaoViewModel;
     late final RankingPessoalViewModel rankingPessoalViewModel;
     late final FirestoreUsuarioService firestoreUsuarioService;
-    
+    late final FotoFacade fotoFacade;
 
     bool _initialized = false;
 
@@ -102,6 +107,12 @@
             avaliacaoRepository, _studentRepository),
       );
       avaliacaoViewModel = AvaliacaoViewModel(avaliacaoFacade);
+      final photoStorageService = PhotoStorageService();
+      final fotoRepository = FotoRepositoryImpl(photoStorageService);
+      fotoFacade = FotoFacade(
+        upload: UploadFotoUseCase(fotoRepository),
+        remover: RemoverFotoUseCase(fotoRepository),
+      );
       rankingPessoalViewModel = RankingPessoalViewModel(avaliacaoFacade);
 
       // Theme — SharedPreferences (permanece local)
