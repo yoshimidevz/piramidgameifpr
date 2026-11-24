@@ -121,6 +121,7 @@ class _CompletarPerfilScreenState extends State<CompletarPerfilScreen> {
     final pessoaAtualizada = _perfilExistente!.copyWith(
       contaVinculada: true,
       criadoPor: uid,
+      fotoUrl: fotoUrl
     );
     await InjectionContainer.instance.studentFacade.updateStudent(pessoaAtualizada);
 
@@ -134,6 +135,7 @@ class _CompletarPerfilScreenState extends State<CompletarPerfilScreen> {
     String uid, String? email, String? fotoUrl,
     String nome, String apelido, String arroba,
   ) async {
+    print('DEBUG CRIAR: fotoUrl recebido = $fotoUrl');
     final pessoaId = '${uid}_pessoa';
     final student = Student(
       id: pessoaId,
@@ -145,6 +147,7 @@ class _CompletarPerfilScreenState extends State<CompletarPerfilScreen> {
       criteriaScores: {for (final c in CriteriaType.values) c: 1.0},
       criadoPor: uid,
       arroba: arroba,
+      fotoUrl: fotoUrl,
       contaVinculada: true,
     );
 
@@ -154,6 +157,10 @@ class _CompletarPerfilScreenState extends State<CompletarPerfilScreen> {
     if (!mounted) return;
 
     if (studentResult.isFailure) {
+      studentResult.when(
+        onSuccess: (_) {},
+        onFailure: (f) => print('DEBUG PERFIL: ${f.message}'),
+      );
       setState(() {
         _isLoading = false;
         _errorMessage = 'Erro ao criar perfil no ranking';

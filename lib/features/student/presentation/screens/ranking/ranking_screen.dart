@@ -258,6 +258,15 @@ class _PodiumColumn extends StatelessWidget {
                   color: isGhost
                       ? Colors.grey.withOpacity(.25)
                       : _avatarColor(),
+                  image: (!isGhost && student.fotoUrl != null)
+                      ? DecorationImage(
+                          image: NetworkImage(
+                            student.fotoUrl!,
+                            webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
+                          ),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
                   border: Border.all(
                     color: isGhost
                         ? Colors.grey.withOpacity(.4)
@@ -273,16 +282,18 @@ class _PodiumColumn extends StatelessWidget {
                   ],
                 ),
                 alignment: Alignment.center,
-                child: isGhost
-                    ? Text('👻', style: TextStyle(fontSize: avatarSize * 0.45))
-                    : Text(
-                        _initials(),
-                        style: AppTextStyles.sora(
-                          fontSize: isWinner ? 23 : 19,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
+                child: (student.fotoUrl != null && !isGhost)
+                    ? null
+                    : isGhost
+                        ? Text('👻', style: TextStyle(fontSize: avatarSize * 0.45))
+                        : Text(
+                            _initials(),
+                            style: AppTextStyles.sora(
+                              fontSize: isWinner ? 23 : 19,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
               ),
             ],
           ),
@@ -397,21 +408,41 @@ class _RankingListItem extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: isGhost
-                  ? Colors.grey.withOpacity(.25)
-                  : _avatarColor(),
-              child: isGhost
-                  ? const Text('👻', style: TextStyle(fontSize: 16))
-                  : Text(
-                      _initials(),
-                      style: AppTextStyles.sora(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
+                        ClipOval(
+              child: SizedBox(
+                width: 36,
+                height: 36,
+                child: (!isGhost && student.fotoUrl != null)
+                    ? Image.network(
+                        student.fotoUrl!,
+                        fit: BoxFit.cover,
+                        webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
+                        errorBuilder: (context, error, stack) => Container(
+                          color: _avatarColor(),
+                          alignment: Alignment.center,
+                          child: Text(
+                            _initials(),
+                            style: AppTextStyles.sora(
+                              fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      )
+                    : Container(
+                        color: isGhost
+                            ? Colors.grey.withOpacity(.25)
+                            : _avatarColor(),
+                        alignment: Alignment.center,
+                        child: isGhost
+                            ? const Text('👻', style: TextStyle(fontSize: 16))
+                            : Text(
+                                _initials(),
+                                style: AppTextStyles.sora(
+                                  fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white,
+                                ),
+                              ),
                       ),
-                    ),
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(

@@ -27,7 +27,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
   Future<void> _carregar() async {
     final uid = InjectionContainer.instance.authViewModel.currentUser.value?.uid;
-    if (uid == null) return;
+    if (uid == null) {
+      if (mounted) setState(() => _isLoading = false);
+      return;
+    }
 
     final usuarioResult = await InjectionContainer.instance
         .firestoreUsuarioService.buscarPorUid(uid);
@@ -106,20 +109,39 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       // Avatar + info principal
                       Row(
                         children: [
-                          CircleAvatar(
-                            radius: 36,
-                            backgroundColor: _avatarColor(_usuario?.nome ?? authUser?.name ?? '?'),
-                            backgroundImage: (_usuario?.fotoUrl ?? authUser?.photoUrl) != null
-                                ? NetworkImage(_usuario?.fotoUrl ?? authUser!.photoUrl!)
-                                : null,
-                            child: (_usuario?.fotoUrl ?? authUser?.photoUrl) == null
-                                ? Text(
-                                    _initials(_usuario?.nome ?? authUser?.name ?? '?'),
-                                    style: AppTextStyles.sora(
-                                      fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white,
+                          ClipOval(
+                            child: SizedBox(
+                              width: 72,
+                              height: 72,
+                              child: _usuario?.fotoUrl != null
+                                  ? Image.network(
+                                      _usuario!.fotoUrl!,
+                                      fit: BoxFit.cover,
+                                      webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
+                                      errorBuilder: (context, error, stack) {
+                                        return Container(
+                                          color: _avatarColor(_usuario?.nome ?? authUser?.name ?? '?'),
+                                          alignment: Alignment.center,
+                                          child: Text(
+                                            _initials(_usuario?.nome ?? authUser?.name ?? '?'),
+                                            style: AppTextStyles.sora(
+                                              fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    )
+                                  : Container(
+                                      color: _avatarColor(_usuario?.nome ?? authUser?.name ?? '?'),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        _initials(_usuario?.nome ?? authUser?.name ?? '?'),
+                                        style: AppTextStyles.sora(
+                                          fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white,
+                                        ),
+                                      ),
                                     ),
-                                  )
-                                : null,
+                            ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(

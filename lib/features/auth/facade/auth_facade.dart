@@ -21,4 +21,6 @@ class AuthFacade {
   Future<bool> isLoggedIn() => _repository.isLoggedIn();
 
   AuthToken? getCurrentUser() => _repository.getCurrentUser();
+  
+  Future<void> aguardarRestauracaoSessao() => _repository.aguardarRestauracaoSessao();
 }

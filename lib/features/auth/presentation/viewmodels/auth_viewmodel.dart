@@ -11,7 +11,9 @@ class AuthViewModel {
   final currentUser = signal<AuthToken?>(null);
   final isLoggedIn = signal<bool>(false);
 
-  Future<void> checkAuthStatus() async {
+    Future<void> checkAuthStatus() async {
+    await _facade.aguardarRestauracaoSessao();
+
     final loggedIn = await _facade.isLoggedIn();
     if (loggedIn) {
       currentUser.value = _facade.getCurrentUser();

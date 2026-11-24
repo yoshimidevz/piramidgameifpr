@@ -63,4 +63,8 @@ class AuthRepositoryImpl implements AuthRepository {
       photoUrl: user.photoURL,
     );
   }
+
+  @override
+  Future<void> aguardarRestauracaoSessao() =>
+      _service.aguardarRestauracaoSessao();
 }

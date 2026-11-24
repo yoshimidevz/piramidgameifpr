@@ -8,4 +8,5 @@ abstract class AuthRepository {
   Future<Result<void>> logout();
   Future<bool> isLoggedIn();
   AuthToken? getCurrentUser();
+  Future<void> aguardarRestauracaoSessao();
 }

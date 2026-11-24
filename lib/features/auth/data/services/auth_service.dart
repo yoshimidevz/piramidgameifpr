@@ -35,12 +35,21 @@ class AuthService {
       final provider = GoogleAuthProvider();
       provider.setCustomParameters({'prompt': 'select_account'});
       final result = await _auth.signInWithPopup(provider);
+      
+      print('DEBUG AUTH: user.photoURL = ${result.user?.photoURL}');
+      print('DEBUG AUTH: user.displayName = ${result.user?.displayName}');
+      print('DEBUG AUTH: providerData = ${result.user?.providerData.map((p) => p.photoURL).toList()}');
+      
       return Result.success(result.user!);
     } on FirebaseAuthException catch (e) {
       return Result.failure(Failure(_friendlyError(e.code)));
     } catch (e) {
       return Result.failure(Failure('Erro ao entrar com Google: $e'));
     }
+  }
+
+  Future<void> aguardarRestauracaoSessao() async {
+    await _auth.authStateChanges().first;
   }
 
   Future<void> logout() async {

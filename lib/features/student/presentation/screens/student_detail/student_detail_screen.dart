@@ -242,12 +242,36 @@ class _StudentHeader extends StatelessWidget {
 
     return Row(
       children: [
-        CircleAvatar(
-          radius: 28,
-          backgroundColor: _avatarColor(),
-          child: Text(
-            _initials(),
-            style: AppTextStyles.sora(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white),
+        ClipOval(
+          child: SizedBox(
+            width: 56,
+            height: 56,
+            child: student.fotoUrl != null
+                ? Image.network(
+                    student.fotoUrl!,
+                    fit: BoxFit.cover,
+                    webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
+                    errorBuilder: (context, error, stack) => Container(
+                      color: _avatarColor(),
+                      alignment: Alignment.center,
+                      child: Text(
+                        _initials(),
+                        style: AppTextStyles.sora(
+                          fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  )
+                : Container(
+                    color: _avatarColor(),
+                    alignment: Alignment.center,
+                    child: Text(
+                      _initials(),
+                      style: AppTextStyles.sora(
+                        fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white,
+                      ),
+                    ),
+                  ),
           ),
         ),
         const SizedBox(width: 14),

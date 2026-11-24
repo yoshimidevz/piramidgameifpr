@@ -33,6 +33,7 @@ class Student {
   final String? criadoPor; // uid do usuario que cadastrou essa pessoa
   final String? arroba;
   final bool contaVinculada;
+  final String? fotoUrl;
 
   const Student({
     required this.id,
@@ -45,6 +46,7 @@ class Student {
     this.criadoPor,
     this.arroba,
     this.contaVinculada = false,
+    this.fotoUrl,
   });
 
   double get totalScore {
@@ -67,6 +69,7 @@ class Student {
     String? criadoPor,
     String? arroba,
     bool? contaVinculada,
+    String? fotoUrl,
   }) {
     return Student(
       id: id ?? this.id,
@@ -79,6 +82,7 @@ class Student {
       criadoPor: criadoPor ?? this.criadoPor,
       arroba: arroba ?? this.arroba,
       contaVinculada: contaVinculada ?? this.contaVinculada,
+      fotoUrl: fotoUrl ?? this.fotoUrl
     );
   }
 }
